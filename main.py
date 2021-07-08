@@ -7,9 +7,20 @@ class Game:
     quitGame = False
     resolution = (640, 480)
 
+    # Position at the center, actual inside rendered
+    # (prolly need to move these details in some render class (or smth)?)
+    fieldRenderOrigin = (
+        (resolution[0] - constants.GAME_FIELD_RENDER_SIZE[0]) / 2,
+        (resolution[1] - constants.GAME_FIELD_RENDER_SIZE[1]) / 2
+    )
+    fieldOrigin = (
+        (resolution[0] - constants.GAME_FIELD_SIZE[0]) / 2,
+        (resolution[1] - constants.GAME_FIELD_SIZE[1]) / 2
+    )
+
     def init(self):
         pygame.init()
-        self.window = pygame.display.set_mode((640,480))
+        self.window = pygame.display.set_mode(self.resolution)
         self.clock = pygame.time.Clock()
         self.color_state = 0
 
@@ -21,7 +32,7 @@ class Game:
             self.quitGame = True
     
     def updateState(self):
-        self.clock.tick(60)
+        self.clock.tick(constants.TICK_RATE_LIMIT)
         self.game_state.tickState(self.clock.get_time())
 
         self.color_state += 8e-3 * self.clock.get_time()
@@ -34,27 +45,36 @@ class Game:
     
     def render(self):
         # Draw background
-        pygame.draw.rect(self.window, self.color, (0, 0, 640, 480))
+        pygame.draw.rect(
+            self.window, 
+            self.color, 
+            (
+                self.fieldRenderOrigin[0],
+                self.fieldRenderOrigin[1], 
+                constants.GAME_FIELD_RENDER_SIZE[0],
+                constants.GAME_FIELD_RENDER_SIZE[1]
+            )
+        )
 
         # Draw players
         pygame.draw.rect(
             self.window, 
             (255, 255, 255), 
             (
-                0, 
-                self.game_state.playerPosition, 
-                constants.playerSize[0], 
-                constants.playerSize[1]
+                self.fieldOrigin[0], 
+                self.fieldOrigin[1] + self.game_state.playerPosition, 
+                constants.PLAYER_SIZE[0], 
+                constants.PLAYER_SIZE[1]
             )
         )
         pygame.draw.rect(
             self.window, 
             (255, 255, 255), 
             (
-                self.resolution[0] - constants.playerSize[0], 
-                self.game_state.enemyPosition, 
-                constants.playerSize[0], 
-                constants.playerSize[1]
+                (self.fieldOrigin[0] + constants.GAME_FIELD_SIZE[0]) - constants.PLAYER_SIZE[0], 
+                self.fieldOrigin[1] + self.game_state.enemyPosition, 
+                constants.PLAYER_SIZE[0], 
+                constants.PLAYER_SIZE[1]
             )
         )
 
@@ -63,10 +83,10 @@ class Game:
             self.window, 
             (255, 255, 255), 
             (
-                self.game_state.ballPosition[0], 
-                self.game_state.ballPosition[1]
+                self.fieldOrigin[0] + self.game_state.ballPosition[0], 
+                self.fieldOrigin[1] + self.game_state.ballPosition[1]
             ),
-            constants.ballRadius
+            constants.BALL_RADIUS
         )
         pygame.display.update()
 
@@ -76,6 +96,7 @@ class Game:
             self.processInput()
             self.updateState()
             self.render()
+            print(self.game_state.ballPositionDiscrete)
         pygame.quit()
         
 
