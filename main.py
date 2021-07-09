@@ -1,5 +1,7 @@
 import pygame
 import math
+
+from pygame.constants import NOEVENT
 import gameState
 import constants
 
@@ -20,7 +22,7 @@ class Game:
 
     def init(self):
         pygame.init()
-        self.window = pygame.display.set_mode(self.resolution)
+        self.window = pygame.display.set_mode(self.resolution, pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
         self.color_state = 0
 
@@ -30,6 +32,8 @@ class Game:
         event = pygame.event.poll()
         if event.type == pygame.QUIT:
             self.quitGame = True
+        elif event.type != pygame.NOEVENT:
+            print(event)
     
     def updateState(self):
         self.clock.tick(constants.TICK_RATE_LIMIT)
@@ -96,7 +100,6 @@ class Game:
             self.processInput()
             self.updateState()
             self.render()
-            print(self.game_state.ballPositionDiscrete)
         pygame.quit()
         
 
