@@ -22,7 +22,9 @@ class Game:
 
     def init(self):
         pygame.init()
-        self.window = pygame.display.set_mode(self.resolution, pygame.RESIZABLE)
+        self.window = pygame.display.set_mode(
+            self.resolution,
+            pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
         self.color_state = 0
 
@@ -75,7 +77,9 @@ class Game:
             self.window, 
             (255, 255, 255), 
             (
-                (self.fieldOrigin[0] + constants.GAME_FIELD_SIZE[0]) - constants.PLAYER_SIZE[0], 
+                (self.fieldOrigin[0] 
+                + constants.GAME_FIELD_SIZE[0] 
+                - constants.PLAYER_SIZE[0]), 
                 self.fieldOrigin[1] + self.game_state.enemyPosition, 
                 constants.PLAYER_SIZE[0], 
                 constants.PLAYER_SIZE[1]

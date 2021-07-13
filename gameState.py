@@ -1,5 +1,6 @@
 import constants
 
+
 class GameState:
     ballPosition = [0.0, 0.0]
     ballPositionDiscrete = [0, 0]
@@ -17,7 +18,9 @@ class GameState:
         self.ballPositionDiscrete[1] = int(self.ballPosition[1])
 
         # Bounce back if required
-        downOvershoot = self.ballPosition[0] + constants.BALL_RADIUS - constants.GAME_FIELD_SIZE[0]
+        downOvershoot = (self.ballPosition[0]
+                         + constants.BALL_RADIUS
+                         - constants.GAME_FIELD_SIZE[0])
         if downOvershoot > 0:
             self.ballPosition[0] -= 2*downOvershoot
             self.ballVelocity[0] *= -1
@@ -25,7 +28,9 @@ class GameState:
         if upOvershoot > 0:
             self.ballPosition[0] += 2*upOvershoot
             self.ballVelocity[0] *= -1
-        rightOvershoot = self.ballPosition[1] + constants.BALL_RADIUS - constants.GAME_FIELD_SIZE[1]
+        rightOvershoot = (self.ballPosition[1]
+                             + constants.BALL_RADIUS
+                             - constants.GAME_FIELD_SIZE[1])
         if rightOvershoot > 0:
             self.ballPosition[1] -= 2*rightOvershoot
             self.ballVelocity[1] *= -1
@@ -33,5 +38,5 @@ class GameState:
         if leftOvershoot > 0:
             self.ballPosition[1] += 2*leftOvershoot
             self.ballVelocity[1] *= -1
-        
+
         # TODO: detect collisions
