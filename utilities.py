@@ -3,20 +3,20 @@ from typing import List, Tuple
 
 import numpy as np
 
-def collisionLineCircle(
-    lineP1: Tuple[float, float], 
-    lineP2: Tuple[float, float], 
+def collisionSegmentCircle(
+    segStart: Tuple[float, float], 
+    segEnd: Tuple[float, float], 
     circOrig: Tuple[float, float], 
     circR: float
     ) -> List[Tuple[float, float]]:
     """
-    Detects if the line defined by 2 points intersects with the circle
-    (defined by origin and radius as tuples).
+    Detects if the segment between 2 given points intersects with the 
+    circle (defined by origin and radius as tuples).
     @returns List of points of intersections (0 to 2 points)
     """
     (x0, y0) = circOrig
-    (x1, y1) = lineP1
-    (x2, y2) = lineP2
+    (x1, y1) = segStart
+    (x2, y2) = segEnd
     result = []
     if x1 != x2:
         # Obtain line equation coefficients
@@ -61,7 +61,13 @@ def collisionLineCircle(
             
         for y in y_list:
             result.append((x1, y))
-    return result
+    # Filter out intersections outside the segment
+    resultInSegment = []
+    for point in result:
+        if pointInBox(point, segStart, segEnd):
+            resultInSegment.append(point)
+    return resultInSegment
+
 
 def lineEqtnFrom2Points(
     lineStart: Tuple[float, float], 
@@ -186,10 +192,3 @@ def collisionSegments(
             else:
                 return [closestPoint]
             
-    
-collisionSegments(
-    (1, 1),
-    (2, 2),
-    (1, 1),
-    (1, 2)
-)

@@ -69,7 +69,6 @@ class Circle(Figure):
         )
 
 
-
 class Segment(Figure):
     def __init__(
         self, 
@@ -310,7 +309,7 @@ class DemoSegCirc(Game):
 
     
     def reinitCollisions(self):
-        collisions = utilities.collisionLineCircle(
+        collisions = utilities.collisionSegmentCircle(
             self.segment.start.location, 
             self.segment.end.location, 
             self.circle.center.location, 
@@ -422,5 +421,5 @@ class Demo2Seg(Game):
     segmentUpdater3: InputHandler
     segmentUpdater4: InputHandler
 
-game = Demo2Seg()
+game = DemoSegCirc()
 game.run()
