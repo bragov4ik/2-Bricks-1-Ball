@@ -134,7 +134,7 @@ def collisionSegments(
         if (pointInBox(solution, seg1Start, seg1End)
             and pointInBox(solution, seg2Start, seg2End)):
             # The intersection is in the segments
-            return solution
+            return [solution]
         else:
             return []
 

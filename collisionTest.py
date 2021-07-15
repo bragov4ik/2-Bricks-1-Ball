@@ -187,53 +187,25 @@ class InputHandler:
 
 
 class Game:
-    quitGame = False
-    colorBackgr = (255, 128, 0)
+    # Constants?
+    COLOR_BACKGRND = (255, 128, 0)
+    RADIUS_COLLISION = 3
+    COLOR_COLLISION = (240, 240, 230)
 
-    circle = Circle(Point(250, 250), 100)
+    # Variables
+    quitGame: bool
+    updaters: List[InputHandler]
+    figures: List[Figure]
+    collisions: List[Figure]
 
-    lineUpdated = True
-    segment = Segment(
-        Point(100, 100),
-        Point(400, 200)
-    )
-
-    collisions = []
-    radiusCollision = 3
-    colorCollision = (240, 240, 230)
-
-    segmentUpdater1 = InputHandler(
-        segment.start,
-        (
-            pygame.K_DOWN,
-            pygame.K_RIGHT,
-            pygame.K_UP,
-            pygame.K_LEFT
-        )
-    )
-    segmentUpdater2 = InputHandler(
-        segment.end,
-        (
-            pygame.K_s,
-            pygame.K_d,
-            pygame.K_w,
-            pygame.K_a
-        )
-    )
-    updaters: List[InputHandler] = [
-        segmentUpdater1, 
-        segmentUpdater2,
-    ]
-
-    figures: List[Figure] = [
-        circle,
-        segment
-    ]
-
-    def init(self):
+    def __init__(self):
         pygame.init()
         self.window = pygame.display.set_mode((640, 480), pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
+        self.updaters = []
+        self.figures = []
+        self.collisions = []
+        self.quitGame = False
 
     def processInput(self):
         event = pygame.event.poll()
@@ -248,59 +220,48 @@ class Game:
             for updater in self.updaters:
                 updater.handleKeyUp(key)
 
-    def updateState(self):
-        self.clock.tick(60)
+
+    def tickUpdaters(self):
+        """
+        Moves all objects attached to updaters accordingly.  Return
+        whether anything was actually changed
+        """
+        anyUpdated = False
         for updater in self.updaters:
             wasMoved = updater.moveObject()
             if wasMoved:
-                self.lineUpdated = True
+                anyUpdated = True
+        return anyUpdated
 
-        if self.lineUpdated:
-            collisions = utilities.collisionLineCircle(
-                self.segment.start.location, 
-                self.segment.end.location, 
-                self.circle.center.location, 
-                self.circle.radius
-            )
-            self.collisions = []
-            self.figures = [
-                self.circle,
-                self.segment
-            ]
-            for col in collisions:
-                # Don't draw if outside the segment
-                if not utilities.pointInBox(
-                    col, 
-                    self.segment.start.location, 
-                    self.segment.end.location
-                    ):
-                    continue
 
-                colFig = Circle(
-                    Point(col[0], col[1]),
-                    self.radiusCollision,
-                    self.colorCollision
-                )
-                self.collisions.append(colFig)
-                self.figures.append(colFig)
-            self.lineUpdated = False
+    def reinitCollisions(self):
+        pass
+
+
+    def updateState(self):
+        self.clock.tick(60)
+        anyUpdated = self.tickUpdaters()
+        if anyUpdated:
+            self.reinitCollisions()
+            
 
     def render(self):
         # Draw background
 
         pygame.draw.rect(
             self.window,
-            self.colorBackgr,
+            self.COLOR_BACKGRND,
             (0, 0) + pygame.display.get_window_size()
         )
         
         for figure in self.figures:
             figure.draw(self.window)
+        for figure in self.collisions:
+            figure.draw(self.window)
 
         pygame.display.update()
 
     def run(self):
-        self.init()
         while not self.quitGame:
             self.processInput()
             self.updateState()
@@ -308,5 +269,158 @@ class Game:
         pygame.quit()
 
 
-game = Game()
+class DemoSegCirc(Game):
+    def __init__(self):
+        super().__init__()
+        self.circle = Circle(Point(250, 250), 100)
+
+        self.segment = Segment(
+            Point(100, 100),
+            Point(400, 200)
+        )
+
+        self.segmentUpdater1 = InputHandler(
+            self.segment.start,
+            (
+                pygame.K_DOWN,
+                pygame.K_RIGHT,
+                pygame.K_UP,
+                pygame.K_LEFT
+            )
+        )
+        self.segmentUpdater2 = InputHandler(
+            self.segment.end,
+            (
+                pygame.K_s,
+                pygame.K_d,
+                pygame.K_w,
+                pygame.K_a
+            )
+        )
+        self.updaters: List[InputHandler] = [
+            self.segmentUpdater1, 
+            self.segmentUpdater2,
+        ]
+        self.figures: List[Figure] = [
+            self.circle,
+            self.segment,
+        ]
+        # Need to initialize collisions as we've just added figures
+        self.reinitCollisions()
+
+    
+    def reinitCollisions(self):
+        collisions = utilities.collisionLineCircle(
+            self.segment.start.location, 
+            self.segment.end.location, 
+            self.circle.center.location, 
+            self.circle.radius
+        )
+        self.collisions = []
+        for col in collisions:
+            # Don't draw if outside the segment
+            if not utilities.pointInBox(
+                col, 
+                self.segment.start.location, 
+                self.segment.end.location
+                ):
+                continue
+
+            colFig = Circle(
+                Point(col[0], col[1]),
+                self.RADIUS_COLLISION,
+                self.COLOR_COLLISION
+            )
+            self.collisions.append(colFig)
+
+
+    circle: Circle
+    segment: Segment
+    segmentUpdater1: InputHandler
+    segmentUpdater2: InputHandler
+
+
+class Demo2Seg(Game):
+    def __init__(self):
+        super().__init__()
+        self.segment1 = Segment(Point(0, 0), Point(100, 100))
+        self.segment2 = Segment(Point(100, 0), Point(0, 100))
+
+        self.segmentUpdater1 = InputHandler(
+            self.segment1.start,
+            (
+                pygame.K_s,
+                pygame.K_d,
+                pygame.K_w,
+                pygame.K_a
+            )
+        )
+        self.segmentUpdater2 = InputHandler(
+            self.segment1.end,
+            (
+                pygame.K_k,
+                pygame.K_l,
+                pygame.K_i,
+                pygame.K_j
+            )
+        )
+
+        self.segmentUpdater3 = InputHandler(
+            self.segment2.start,
+            (
+                pygame.K_DOWN,
+                pygame.K_RIGHT,
+                pygame.K_UP,
+                pygame.K_LEFT
+            )
+        )
+        self.segmentUpdater4 = InputHandler(
+            self.segment2.end,
+            (
+                pygame.K_KP2,
+                pygame.K_KP6,
+                pygame.K_KP8,
+                pygame.K_KP4
+            )
+        )
+        
+        self.updaters: List[InputHandler] = [
+            self.segmentUpdater1, 
+            self.segmentUpdater2,
+            self.segmentUpdater3, 
+            self.segmentUpdater4,
+        ]
+        self.figures: List[Figure] = [
+            self.segment1,
+            self.segment2,
+        ]
+        self.reinitCollisions()
+
+
+    def reinitCollisions(self):
+        collisions = utilities.collisionSegments(
+            seg1Start=self.segment1.start.location,
+            seg1End=self.segment1.end.location,
+            seg2Start=self.segment2.start.location,
+            seg2End=self.segment2.end.location
+        )
+
+        self.collisions = []
+        for col in collisions:
+            colFig = Circle(
+                Point(col[0], col[1]),
+                self.RADIUS_COLLISION,
+                self.COLOR_COLLISION
+            )
+            self.collisions.append(colFig)
+
+
+    segment1: Segment
+    segment2: Segment
+    segmentUpdater1: InputHandler
+    segmentUpdater2: InputHandler
+    segmentUpdater3: InputHandler
+    segmentUpdater4: InputHandler
+
+game = Demo2Seg()
 game.run()
