@@ -1,42 +1,54 @@
 import constants
+import objects
 
 
 class GameState:
-    ballPosition = [0.0, 0.0]
-    ballPositionDiscrete = [0, 0]
-    ballVelocity = [1, 1]
+    ball: objects.Ball
+    playerBrick: objects.Brick
+    enemyBrick: objects.Brick
     playerPosition = 0
     enemyPosition = 0
     playerScore = 0
     enemyScore = 0
 
-    def tickState(self, timePassed):
+
+    def __init__(self) -> None:
+        self.ball = objects.Ball()
+        self.ball.xVel = 1
+        self.ball.yVel = 1
+        self.playerBrick = objects.Brick()
+        self.enemyBrick = objects.Brick(
+            x=constants.GAME_FIELD_SIZE[0]-constants.PLAYER_SIZE[0]
+            )
+
+
+    def tickState(self, t):
         # Move ball forward
-        self.ballPosition[0] += self.ballVelocity[0] * timePassed * 1e-1
-        self.ballPosition[1] += self.ballVelocity[1] * timePassed * 1e-1
-        self.ballPositionDiscrete[0] = int(self.ballPosition[0])
-        self.ballPositionDiscrete[1] = int(self.ballPosition[1])
+        self.ball.moveBy(
+            self.ball.xVel*t*1e-1, 
+            self.ball.yVel*t*1e-1
+        )
 
         # Bounce back if required
-        downOvershoot = (self.ballPosition[0]
+        downOvershoot = (self.ball.yPos
                          + constants.BALL_RADIUS
-                         - constants.GAME_FIELD_SIZE[0])
+                         - constants.GAME_FIELD_SIZE[1])
         if downOvershoot > 0:
-            self.ballPosition[0] -= 2*downOvershoot
-            self.ballVelocity[0] *= -1
-        upOvershoot = -(self.ballPosition[0] - constants.BALL_RADIUS)
+            self.ball.yPos -= 2*downOvershoot
+            self.ball.yVel *= -1
+        upOvershoot = -(self.ball.yPos - constants.BALL_RADIUS)
         if upOvershoot > 0:
-            self.ballPosition[0] += 2*upOvershoot
-            self.ballVelocity[0] *= -1
-        rightOvershoot = (self.ballPosition[1]
+            self.ball.yPos += 2*upOvershoot
+            self.ball.yVel *= -1
+        rightOvershoot = (self.ball.xPos
                              + constants.BALL_RADIUS
-                             - constants.GAME_FIELD_SIZE[1])
+                             - constants.GAME_FIELD_SIZE[0])
         if rightOvershoot > 0:
-            self.ballPosition[1] -= 2*rightOvershoot
-            self.ballVelocity[1] *= -1
-        leftOvershoot = -(self.ballPosition[1] - constants.BALL_RADIUS)
+            self.ball.xPos -= 2*rightOvershoot
+            self.ball.xVel *= -1
+        leftOvershoot = -(self.ball.xPos - constants.BALL_RADIUS)
         if leftOvershoot > 0:
-            self.ballPosition[1] += 2*leftOvershoot
-            self.ballVelocity[1] *= -1
+            self.ball.xPos += 2*leftOvershoot
+            self.ball.xVel *= -1
 
         # TODO: detect collisions
