@@ -1,3 +1,4 @@
+from typing import List
 import constants
 import objects
 
@@ -23,13 +24,26 @@ class GameState:
 
 
     def tickState(self, t):
-        # Move ball forward
-        self.ball.moveBy(
+        moveVector = (
             self.ball.xVel*t*1e-1, 
             self.ball.yVel*t*1e-1
         )
+        
+        curStart = (
+            self.ball.xPos,
+            self.ball.yPos
+        )
+        curEnd = (
+            curStart[0] + moveVector[0],
+            curStart[1] + moveVector[1],
+        )
+        
+        collisions: List[objects.Collision] = None
+        while len(collisions) > 0 or collisions == None:
+            
 
-        # Bounce back if required
+
+        # Simple bounce back (off the  walls only)
         downOvershoot = (self.ball.yPos
                          + constants.BALL_RADIUS
                          - constants.GAME_FIELD_SIZE[1])
@@ -52,3 +66,4 @@ class GameState:
             self.ball.xVel *= -1
 
         # TODO: detect collisions
+

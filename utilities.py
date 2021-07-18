@@ -3,16 +3,78 @@ from typing import List, Tuple
 
 import numpy as np
 
+import objects
+
+
+def lineEqtnFrom2Points(
+    lineStart: Tuple[float, float], 
+    lineEnd: Tuple[float, float]
+    ) -> Tuple[float, float, float]:
+    """
+    Finds equation of the line (in form Ax + By = C) from 2 given
+    points.  If the points coincide, returns an equation of a line
+    parallel to y axis.  Result is a tuple (A, B, C)
+    """
+    (x1, y1) = lineStart
+    (x2, y2) = lineEnd
+    a, b = 0, 0
+    if x1 != x2:
+        b = 1
+        a = -b*(y1-y2)/(x1-x2)
+    elif y1 != y2:
+        a = 1
+        b = -a*(x1-x2)/(y1-y2)
+    else:
+        # The points coincide; Let's assume the line is vertical
+        a = 1
+        b = 0
+    c = a*x1 + b*y1
+    return (a, b, c)
+
+
+def pointInBox(
+    point: Tuple[float, float],
+    boxCorner1: Tuple[float, float],
+    boxCorner2: Tuple[float, float]
+    ) -> bool:
+    minCorner = (
+        min(boxCorner1[0], boxCorner2[0]),
+        min(boxCorner1[1], boxCorner2[1])
+        )
+    maxCorner = (
+        max(boxCorner1[0], boxCorner2[0]),
+        max(boxCorner1[1], boxCorner2[1])
+        )
+    return (minCorner[0] <= point[0] <= maxCorner[0]
+        and minCorner[1] <= point[1] <= maxCorner[1])
+
+
+def rotationMatrix2D(
+    alpha: float
+    ) -> np.ndarray:
+    """
+    Calculates 2D rotational matrix for given angle alpha (counter
+    clockwise for xy-plane with inverted y, like in our case)
+    """
+    cosine = np.math.cos(alpha)
+    sine = np.math.sin(alpha)
+    return np.array([
+        [cosine, -sine],
+        [sine, cosine]
+    ])
+
+
 def collisionSegmentCircle(
     segStart: Tuple[float, float], 
     segEnd: Tuple[float, float], 
     circOrig: Tuple[float, float], 
     circR: float
-    ) -> List[Tuple[float, float]]:
+    ) -> List[objects.Collision]:
     """
     Detects if the segment between 2 given points intersects with the 
     circle (defined by origin and radius as tuples).
-    @returns List of points of intersections (0 to 2 points)
+    @returns List of collisions (0 to 2 points).  Normals of them are
+    vectors orthogonal to a surface of the circle
     """
     (x0, y0) = circOrig
     (x1, y1) = segStart
@@ -66,50 +128,20 @@ def collisionSegmentCircle(
     for point in result:
         if pointInBox(point, segStart, segEnd):
             resultInSegment.append(point)
-    return resultInSegment
 
-
-def lineEqtnFrom2Points(
-    lineStart: Tuple[float, float], 
-    lineEnd: Tuple[float, float]
-    ) -> Tuple[float, float, float]:
-    """
-    Finds equation of the line (in form Ax + By = C) from 2 given
-    points.  If the points coincide, returns an equation of a line
-    parallel to y axis.  Result is a tuple (A, B, C)
-    """
-    (x1, y1) = lineStart
-    (x2, y2) = lineEnd
-    a, b = 0, 0
-    if x1 != x2:
-        b = 1
-        a = -b*(y1-y2)/(x1-x2)
-    elif y1 != y2:
-        a = 1
-        b = -a*(x1-x2)/(y1-y2)
-    else:
-        # The points coincide; Let's assume the line is vertical
-        a = 1
-        b = 0
-    c = a*x1 + b*y1
-    return (a, b, c)
-
-
-def pointInBox(
-    point: Tuple[float, float],
-    boxCorner1: Tuple[float, float],
-    boxCorner2: Tuple[float, float]
-    ) -> bool:
-    minCorner = (
-        min(boxCorner1[0], boxCorner2[0]),
-        min(boxCorner1[1], boxCorner2[1])
+    # Find normals
+    collisions = []
+    for point in resultInSegment:
+        nextCol = objects.Collision()
+        nextCol.position = point
+        # It lies on the circle, so we can easily find normal vector
+        normal = (
+            point[0] - circOrig[0],
+            point[1] - circOrig[1]
         )
-    maxCorner = (
-        max(boxCorner1[0], boxCorner2[0]),
-        max(boxCorner1[1], boxCorner2[1])
-        )
-    return (minCorner[0] <= point[0] <= maxCorner[0]
-        and minCorner[1] <= point[1] <= maxCorner[1])
+        nextCol.normal = normal
+        collisions.append(nextCol)
+    return collisions
 
 
 def collisionSegments(
@@ -119,18 +151,22 @@ def collisionSegments(
     seg2End: Tuple[float, float]
     ) -> List[Tuple[float, float]]:
     """
-    Finds points of collision of 2 line segments.  If they are parallel,
+    Finds collisions of 2 line segments.  If they are parallel,
     empty list is returned.  In case of (partly) coinciding segments,
     collision point closest to a start of segment 1 is given.
-    @returns List of points of intersections (0 or 1)
+    @returns List of collisions (0 or 1) with normal - any orthogonal 
+    vector to segment 2
     """
+    # Find the normal right away
+    normal: np.ndarray = (
+        rotationMatrix2D(np.math.pi/2) 
+        @ np.array([seg2End[0]-seg2Start[0], seg2End[1]-seg2Start[1]]))
     # Evaluate formulae for lines for given segments in form of
     # ax + by = c
-    coefficients = [
+    coefficients = np.array([
         lineEqtnFrom2Points(seg1Start, seg1End),
         lineEqtnFrom2Points(seg2Start, seg2End)
-    ]
-    coefficients = np.array(coefficients)
+    ])
     # Az = b; z = (x, y)
     A = np.copy(coefficients[:, :2])
     b = np.copy(coefficients[:, 2:])
@@ -140,7 +176,10 @@ def collisionSegments(
         if (pointInBox(solution, seg1Start, seg1End)
             and pointInBox(solution, seg2Start, seg2End)):
             # The intersection is in the segments
-            return [solution]
+            col = objects.Collision()
+            col.position = (solution[0], solution[1])
+            col.normal = (normal[0], normal[1])
+            return [col]
         else:
             return []
 
@@ -190,5 +229,8 @@ def collisionSegments(
             if closestPoint == None:
                 return []
             else:
-                return [closestPoint]
+                col = objects.Collision()
+                col.position = (closestPoint[0], closestPoint[1])
+                col.normal = (normal[0], normal[1])
+                return [col]
             

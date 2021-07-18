@@ -30,6 +30,19 @@ class MovableObject:
         yield self.xPos
         yield self.yPos
 
+
+class Collision:
+    position: Tuple[float, float]
+    normal: Tuple[float, float]
+
+
+    def getUnitNormal(self) -> Tuple[float, float]:
+        magnitude = (self.normal[0]**2 + self.normal[1]**2)**0.5
+        return (
+            self.normal[0]*magnitude, 
+            self.normal[1]*magnitude
+        )
+
         
 class Entity(MovableObject):
     color: Tuple[int, int, int]
