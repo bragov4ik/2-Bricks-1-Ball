@@ -309,7 +309,7 @@ class DemoSegCirc(Game):
 
     
     def reinitCollisions(self):
-        collisions = utilities.collisionSegmentCircle(
+        collisions = utilities.collisionVectorCircle(
             self.segment.start.location, 
             self.segment.end.location, 
             self.circle.center.location, 
@@ -397,11 +397,11 @@ class Demo2Seg(Game):
 
 
     def reinitCollisions(self):
-        collisions = utilities.collisionSegments(
-            seg1Start=self.segment1.start.location,
-            seg1End=self.segment1.end.location,
-            seg2Start=self.segment2.start.location,
-            seg2End=self.segment2.end.location
+        collisions = utilities.collisionVectorSegment(
+            vecStart=self.segment1.start.location,
+            vecEnd=self.segment1.end.location,
+            segStart=self.segment2.start.location,
+            segEnd=self.segment2.end.location
         )
 
         self.collisions = []

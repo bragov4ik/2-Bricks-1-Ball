@@ -101,7 +101,7 @@ class PlayingFieldRenderer:
         """
         shiftedStart = self.__shiftCoordinates(startPos)
         shiftedEnd = self.__shiftCoordinates(endPos)
-        pygame.draw.circle(
+        pygame.draw.line(
             self.window, 
             color, 
             shiftedStart, 

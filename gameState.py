@@ -33,14 +33,14 @@ class GameState:
             self.ball.xPos,
             self.ball.yPos
         )
-        curEnd = (
-            curStart[0] + moveVector[0],
-            curStart[1] + moveVector[1],
+        curMove = (
+            moveVector[0],
+            moveVector[1],
         )
         
         collisions: List[objects.Collision] = None
-        while len(collisions) > 0 or collisions == None:
-            
+        while collisions == None or len(collisions) > 0:
+            collisions = []
 
 
         # Simple bounce back (off the  walls only)

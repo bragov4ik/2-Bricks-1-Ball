@@ -71,6 +71,7 @@ class Ball(Entity):
         color: Tuple[int, int, int] = (255, 255, 255)):
         super().__init__()
         # Assign each recieved value
+        # Position - center of the ball
         self.xPos = x
         self.yPos = y
         self.xScale = scale
@@ -96,6 +97,7 @@ class Brick(Entity):
         color: Tuple[int, int, int] = (255, 255, 255)):
         super().__init__()
         # Assign each recieved value
+        # Brick's position shows upper left corner
         self.xPos = x
         self.yPos = y
         self.xScale = xScale
