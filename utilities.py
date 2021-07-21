@@ -360,8 +360,8 @@ def collisionBallBrick(
     movementVec: Tuple[float, float]
     ) -> List[objects.Collision]:
     """
-    Finds collision of the ball moving into the brick.
-    @returns List with single collision object if they collide, empty
+    Finds collision(-s) of the ball moving into the brick.
+    @returns List with collision object(-s) if they collide, empty
     list otherwise
     """
     # Collision of ball and brick problem is the same as collision of
@@ -371,3 +371,48 @@ def collisionBallBrick(
     # 
     # With this knowledge, let's find the stadium's properties
     stadium = brickBallToStadium(ball, brick)
+    sSides = [
+        stadium.leftSide, 
+        stadium.rightSide, 
+        stadium.topSide, 
+        stadium.bottomSide
+    ]
+    sCorners = [
+        stadium.leftTopCorner, 
+        stadium.rightTopCorner, 
+        stadium.leftBottomCorner, 
+        stadium.rightBottomCorner
+    ]
+    sCornerBoxes = [
+        stadium.leftTopCornerBox, 
+        stadium.rightTopCornerBox,
+        stadium.leftBottomCornerBox, 
+        stadium.rightBottomCornerBox
+    ]
+
+    movementEnd = (
+        ball.xPos + movementVec[0], 
+        ball.yPos + movementVec[1]
+    )
+    collisions: List[objects.Collision] = []
+    # Check collisions with sides
+    for side in sSides:
+        collisions += collisionVectorSegment(
+            (ball.xPos, ball.yPos),
+            movementEnd,
+            side[0],
+            side[1]
+        )
+    # Collisions with corners
+    for (corner, box) in zip(sCorners, sCornerBoxes):
+        newCollisions = collisionVectorCircle(
+            (ball.xPos, ball.yPos),
+            movementEnd,
+            corner[0],
+            corner[1]
+        )
+        for nextCollision in newCollisions:
+            if pointInBox(nextCollision.position, box[0], box[1]):
+                collisions.append(nextCollision)
+    
+    return collisions
