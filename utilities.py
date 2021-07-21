@@ -1,9 +1,18 @@
-from math import sqrt
+from math import acos, pi, sqrt
 from typing import List, NamedTuple, Tuple
 
 import numpy as np
 
 import objects
+
+
+def distance(
+    point1: Tuple[float, float],
+    point2: Tuple[float, float]
+    ) -> float:
+    return sqrt(
+        (point1[0] - point2[0])**2
+        + (point1[1] - point2[1])**2)
 
 
 def lineEqtnFrom2Points(
@@ -217,8 +226,7 @@ def collisionVectorSegment(
             closestPoint = None
             minDistance = None
             for point in pointsOfInterest:
-                distance = sqrt((point[0] - vecStart[0])**2
-                    + (point[1] - vecStart[1])**2)
+                distance = distance(point, vecStart)
                 if (pointInBox(point, vecStart, vecEnd)
                     and pointInBox(point, segStart, segEnd)
                     and (minDistance == None 
@@ -416,3 +424,24 @@ def collisionBallBrick(
                 collisions.append(nextCollision)
     
     return collisions
+
+
+def resolveCollision(
+    startPos: Tuple[float, float],
+    moveVec: Tuple[float, float],
+    collision: objects.Collision
+    ) -> Tuple[float, float]:
+    """
+    Calculates remaining move vector given the move and collision.  
+    Note that collision must lie within the given movement.
+    @returns New move vector (to be applied from collision position)
+    """
+    moveNP: np.ndarray = np.array(moveVec)
+    moveToCollisionNP: np.ndarray = np.array(collision.position) - np.array(startPos)
+    remainingMoveNP: np.ndarray = moveNP - moveToCollisionNP
+    normalNP: np.ndarray = np.array(collision.normal)
+    # Normalize the normal (lol)
+    normalNP /= np.linalg.norm(normalNP)    # Does it actually work?????? TODO: check
+    # Substract 2 projections of movement onto normal to get reflected vector
+    remainingMoveNP -= 2*(normalNP.dot(remainingMoveNP))*normalNP
+    return (remainingMoveNP[0], remainingMoveNP[1])
