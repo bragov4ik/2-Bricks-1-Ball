@@ -12,12 +12,11 @@ class PlayingFieldRenderer:
     fieldOrigin: Tuple[int, int]
     backgroundColor: Tuple[int, int, int]
 
-
     def __init__(
         self,
         window,
-        backgroundColor = (127, 234, 127)
-        ) -> None:
+        backgroundColor=(127, 234, 127)
+    ) -> None:
         self.window = window
         resolution = window.get_size()
         self.fieldOrigin = (
@@ -30,7 +29,6 @@ class PlayingFieldRenderer:
         )
         self.backgroundColor = backgroundColor
 
-    
     def updateOrigins(self):
         resolution = self.window.get_size()
         self.fieldOrigin = (
@@ -41,7 +39,6 @@ class PlayingFieldRenderer:
             (resolution[0] - constants.GAME_FIELD_RENDER_SIZE[0]) / 2,
             (resolution[1] - constants.GAME_FIELD_RENDER_SIZE[1]) / 2
         )
-
 
     def __shiftCoordinates(self, coords):
         """
@@ -56,18 +53,17 @@ class PlayingFieldRenderer:
             newCoords.extend(coords[len(newCoords):])
         return newCoords
 
-
     def drawCircle(
         self,
-        color, 
-        center, 
-        radius, 
-        width=0, 
-        drawTopRight=False, 
-        drawTopLeft=False, 
-        drawBottomLeft=False, 
+        color,
+        center,
+        radius,
+        width=0,
+        drawTopRight=False,
+        drawTopLeft=False,
+        drawBottomLeft=False,
         drawBottomRight=False
-        ) -> pygame.Rect:
+    ) -> pygame.Rect:
         """
         Draws a line using pygame with the same parameters, except
         for shifted positions according to playing field's coordinates.  
@@ -75,25 +71,24 @@ class PlayingFieldRenderer:
         """
         shiftedCenter = self.__shiftCoordinates(center)
         pygame.draw.circle(
-            self.window, 
-            color, 
-            shiftedCenter, 
+            self.window,
+            color,
+            shiftedCenter,
             radius,
             width,
-            drawTopRight, 
-            drawTopLeft, 
-            drawBottomLeft, 
+            drawTopRight,
+            drawTopLeft,
+            drawBottomLeft,
             drawBottomRight
         )
 
-
     def drawLine(
         self,
-        color, 
+        color,
         startPos,
-        endPos, 
+        endPos,
         width=1
-        ) -> pygame.Rect:
+    ) -> pygame.Rect:
         """
         Draws a circle using pygame with the same parameters, except
         for shifted center according to playing field's coordinates.  
@@ -102,13 +97,12 @@ class PlayingFieldRenderer:
         shiftedStart = self.__shiftCoordinates(startPos)
         shiftedEnd = self.__shiftCoordinates(endPos)
         pygame.draw.line(
-            self.window, 
-            color, 
-            shiftedStart, 
-            shiftedEnd, 
+            self.window,
+            color,
+            shiftedStart,
+            shiftedEnd,
             width
         )
-
 
     def drawRect(
         self,
@@ -120,14 +114,14 @@ class PlayingFieldRenderer:
         borderTopRightRadius=-1,
         borderBottomLeftRadius=-1,
         borderBottomRightRadius=-1
-        ) -> pygame.Rect:
-        
+    ) -> pygame.Rect:
+
         position = rect[:2]
         scale = rect[2:]
         shiftedPos = self.__shiftCoordinates(position)
         newRect = tuple(shiftedPos) + scale
         pygame.draw.rect(
-            self.window, 
+            self.window,
             color,
             newRect,
             width,
@@ -138,14 +132,13 @@ class PlayingFieldRenderer:
             borderBottomRightRadius
         )
 
-
     def drawBackground(self):
         pygame.draw.rect(
-            self.window, 
-            self.backgroundColor, 
+            self.window,
+            self.backgroundColor,
             (
                 self.fieldRenderOrigin[0],
-                self.fieldRenderOrigin[1], 
+                self.fieldRenderOrigin[1],
                 constants.GAME_FIELD_RENDER_SIZE[0],
                 constants.GAME_FIELD_RENDER_SIZE[1]
             )

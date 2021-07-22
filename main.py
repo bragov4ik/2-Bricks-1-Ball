@@ -8,6 +8,7 @@ import gameState
 import constants
 import utilities
 
+
 class Game:
     quitGame: bool
     window: pygame.Surface
@@ -33,11 +34,11 @@ class Game:
             self.quitGame = True
         elif event.type != pygame.NOEVENT:
             print(event)
-    
+
     def updateState(self):
         self.clock.tick(constants.TICK_RATE_LIMIT)
         self.game_state.tickState(self.clock.get_time())
-    
+
     def render(self):
         # Draw background
         self.fieldRenderer.drawBackground()
@@ -56,26 +57,26 @@ class Game:
         )
         # sides
         for side in [
-            stad.leftSide, 
-            stad.rightSide, 
-            stad.topSide, 
+            stad.leftSide,
+            stad.rightSide,
+            stad.topSide,
             stad.bottomSide
         ]:
             self.fieldRenderer.drawLine((100, 0, 0), side[0], side[1])
         # corner circles
         for corner in [
-            stad.leftTopCorner, 
-            stad.rightTopCorner, 
-            stad.leftBottomCorner, 
+            stad.leftTopCorner,
+            stad.rightTopCorner,
+            stad.leftBottomCorner,
             stad.rightBottomCorner
         ]:
             self.fieldRenderer.drawCircle((100, 0, 0), corner[0], corner[1], 1)
 
         # corner boxes
         for corner in [
-            stad.leftTopCornerBox, 
+            stad.leftTopCornerBox,
             stad.rightTopCornerBox,
-            stad.leftBottomCornerBox, 
+            stad.leftBottomCornerBox,
             stad.rightBottomCornerBox
         ]:
             self.fieldRenderer.drawLine((100, 0, 0), corner[0], corner[1])
@@ -88,7 +89,7 @@ class Game:
             self.updateState()
             self.render()
         pygame.quit()
-        
+
 
 game = Game()
 game.run()

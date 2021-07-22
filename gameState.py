@@ -18,10 +18,9 @@ class GameState:
     playerScore = 0
     enemyScore = 0
 
-
     def __init__(self) -> None:
         self.ball = objects.Ball(
-            x=constants.GAME_FIELD_SIZE[0]/2, 
+            x=constants.GAME_FIELD_SIZE[0]/2,
             y=constants.GAME_FIELD_SIZE[1]/2
         )
         self.ball.xVel = 1
@@ -31,10 +30,9 @@ class GameState:
             x=constants.GAME_FIELD_SIZE[0]-constants.PLAYER_SIZE[0]
         )
 
-
     def tickState(self, t):
         curMove = (
-            self.ball.xVel*t*1e-1, 
+            self.ball.xVel*t*1e-1,
             self.ball.yVel*t*1e-1
         )
         curStart = (
@@ -45,7 +43,7 @@ class GameState:
             curStart[0] + curMove[0],
             curStart[1] + curMove[1]
         )
-        
+
         r = self.ball.xScale
         sides = (
             (
@@ -80,13 +78,13 @@ class GameState:
                     curStart, curEnd, side[0], side[1]
                 )
             collisions += collisionBallBrick(
-                self.ball, 
-                self.playerBrick, 
+                self.ball,
+                self.playerBrick,
                 curMove
             )
             collisions += collisionBallBrick(
-                self.ball, 
-                self.enemyBrick, 
+                self.ball,
+                self.enemyBrick,
                 curMove
             )
             if len(collisions) == 0:
@@ -104,7 +102,7 @@ class GameState:
                 if collisionsDist[i] < minDist:
                     closestCollision = collisions[i]
                     minDist = collisionsDist[i]
-            
+
             # Resolve the closest collision
             curMove = resolveCollision(
                 curStart,
@@ -123,4 +121,3 @@ class GameState:
         )
         self.ball.xPos = curEnd[0]
         self.ball.yPos = curEnd[1]
-        

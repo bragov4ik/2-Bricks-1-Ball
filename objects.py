@@ -10,21 +10,17 @@ class MovableObject:
     xVel: float
     yVel: float
 
-
     def __init__(self):
         self.xPos, self.yPos = 0, 0
         self.xVel, self.yVel = 0, 0
-
 
     def moveBy(self, xMove, yMove):
         self.xPos += xMove
         self.yPos += yMove
 
-
     def moveTo(self, xNew, yNew):
         self.xPos = xNew
         self.yPos = yNew
-
 
     def __iter__(self):
         yield self.xPos
@@ -35,27 +31,24 @@ class Collision:
     position: Tuple[float, float]
     normal: Tuple[float, float]
 
-
     def getUnitNormal(self) -> Tuple[float, float]:
         magnitude = (self.normal[0]**2 + self.normal[1]**2)**0.5
         return (
-            self.normal[0]*magnitude, 
+            self.normal[0]*magnitude,
             self.normal[1]*magnitude
         )
 
-        
+
 class Entity(MovableObject):
     color: Tuple[int, int, int]
     xScale: float
     yScale: float
-
 
     def __init__(self):
         super().__init__()
         self.color = (0, 0, 0)
         self.xScale = 1.0
         self.yScale = 1.0
-
 
     @abstractmethod
     def draw(self, renderer: render.PlayingFieldRenderer):
@@ -64,11 +57,11 @@ class Entity(MovableObject):
 
 class Ball(Entity):
     def __init__(
-        self, 
-        x: float = 0.0,
-        y: float = 0.0,
-        scale: float = 10, 
-        color: Tuple[int, int, int] = (255, 255, 255)):
+            self,
+            x: float = 0.0,
+            y: float = 0.0,
+            scale: float = 10,
+            color: Tuple[int, int, int] = (255, 255, 255)):
         super().__init__()
         # Assign each recieved value
         # Position - center of the ball
@@ -77,7 +70,6 @@ class Ball(Entity):
         self.xScale = scale
         self.yScale = scale
         self.color = color
-    
 
     def draw(self, renderer: render.PlayingFieldRenderer):
         renderer.drawCircle(
@@ -89,12 +81,12 @@ class Ball(Entity):
 
 class Brick(Entity):
     def __init__(
-        self,
-        x: float = 0.0,
-        y: float = 0.0,
-        xScale: float = 10, 
-        yScale: float = 60, 
-        color: Tuple[int, int, int] = (255, 255, 255)):
+            self,
+            x: float = 0.0,
+            y: float = 0.0,
+            xScale: float = 10,
+            yScale: float = 60,
+            color: Tuple[int, int, int] = (255, 255, 255)):
         super().__init__()
         # Assign each recieved value
         # Brick's position shows upper left corner
@@ -103,7 +95,6 @@ class Brick(Entity):
         self.xScale = xScale
         self.yScale = yScale
         self.color = color
-
 
     def draw(self, renderer: render.PlayingFieldRenderer):
         renderer.drawRect(
