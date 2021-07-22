@@ -1,5 +1,10 @@
 from typing import List
-from utilities import collisionBallBrick, collisionVectorSegment, distance, resolveCollision
+from utilities import (
+    collisionBallBrick,
+    collisionVectorSegment,
+    distance,
+    resolveCollision
+)
 import constants
 import objects
 
@@ -53,11 +58,17 @@ class GameState:
             ),
             (
                 (r, -r+constants.GAME_FIELD_SIZE[1]),
-                (-r+constants.GAME_FIELD_SIZE[0], -r+constants.GAME_FIELD_SIZE[1])
+                (
+                    -r+constants.GAME_FIELD_SIZE[0],
+                    -r+constants.GAME_FIELD_SIZE[1]
+                )
             ),
             (
                 (-r+constants.GAME_FIELD_SIZE[0], r),
-                (-r+constants.GAME_FIELD_SIZE[0], -r+constants.GAME_FIELD_SIZE[1])
+                (
+                    -r+constants.GAME_FIELD_SIZE[0],
+                    -r+constants.GAME_FIELD_SIZE[1]
+                )
             )
         )
         collisions: List[objects.Collision] = None
@@ -68,13 +79,25 @@ class GameState:
                 collisions += collisionVectorSegment(
                     curStart, curEnd, side[0], side[1]
                 )
-            collisions += collisionBallBrick(self.ball, self.playerBrick, curMove)
-            collisions += collisionBallBrick(self.ball, self.enemyBrick, curMove)
+            collisions += collisionBallBrick(
+                self.ball, 
+                self.playerBrick, 
+                curMove
+            )
+            collisions += collisionBallBrick(
+                self.ball, 
+                self.enemyBrick, 
+                curMove
+            )
             if len(collisions) == 0:
                 continue
-            # Extract the one closest to the start
-            collisionsDist = [distance(curStart, col.position) for col in collisions]
-            # It is guaranteed that first entry exists as length check for 0 is not passed
+            # Extract the one closest to the start (that does not
+            # coincide with it to avoid handling one collision twice)
+            collisionsDist = [
+                distance(curStart, col.position) for col in collisions
+            ]
+            # It is guaranteed that first entry exists as length check
+            # for 0 is not passed
             closestCollision = collisions[0]
             minDist = collisionsDist[0]
             for i in range(1, len(collisions)):
@@ -83,7 +106,11 @@ class GameState:
                     minDist = collisionsDist[i]
             
             # Resolve the closest collision
-            curMove = resolveCollision(curStart, curMove, closestCollision)
+            curMove = resolveCollision(
+                curStart,
+                curMove,
+                closestCollision
+            )
             curStart = closestCollision.position
             curEnd = (
                 curStart[0] + curMove[0],
