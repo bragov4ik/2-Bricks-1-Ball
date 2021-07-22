@@ -73,6 +73,20 @@ def rotationMatrix2D(
     ])
 
 
+def mirrorVector2D(
+    inputVector: Tuple[float, float],
+    mirrorNormal: Tuple[float, float]
+) -> Tuple[float, float]:
+    vec: np.ndarray = np.array(inputVector)
+    normal: np.ndarray = np.array(mirrorNormal)
+    # Normalize the normal (lol)
+    normal /= np.linalg.norm(normal)
+    # Substract 2 projections of movement onto normal to get the
+    # reflected vector
+    vec -= 2*(normal.dot(vec))*normal
+    return (vec[0], vec[1])
+
+
 def collisionVectorCircle(
     vecStart: Tuple[float, float],
     vecEnd: Tuple[float, float],
@@ -365,6 +379,7 @@ def brickBallToStadium(
 def collisionBallBrick(
     ball: objects.Ball,
     brick: objects.Brick,
+    movementStart: Tuple[float, float],
     movementVec: Tuple[float, float]
 ) -> List[objects.Collision]:
     """
@@ -399,14 +414,14 @@ def collisionBallBrick(
     ]
 
     movementEnd = (
-        ball.xPos + movementVec[0],
-        ball.yPos + movementVec[1]
+        movementStart[0] + movementVec[0],
+        movementStart[1] + movementVec[1]
     )
     collisions: List[objects.Collision] = []
     # Check collisions with sides
     for side in sSides:
         collisions += collisionVectorSegment(
-            (ball.xPos, ball.yPos),
+            movementStart,
             movementEnd,
             side[0],
             side[1]
@@ -414,7 +429,7 @@ def collisionBallBrick(
     # Collisions with corners
     for (corner, box) in zip(sCorners, sCornerBoxes):
         newCollisions = collisionVectorCircle(
-            (ball.xPos, ball.yPos),
+            movementStart,
             movementEnd,
             corner[0],
             corner[1]
@@ -440,10 +455,4 @@ def resolveCollision(
     moveToCollisionNP: np.ndarray = np.array(
         collision.position) - np.array(startPos)
     remainingMoveNP: np.ndarray = moveNP - moveToCollisionNP
-    normalNP: np.ndarray = np.array(collision.normal)
-    # Normalize the normal (lol)
-    # Does it actually work?????? TODO: check
-    normalNP /= np.linalg.norm(normalNP)
-    # Substract 2 projections of movement onto normal to get reflected vector
-    remainingMoveNP -= 2*(normalNP.dot(remainingMoveNP))*normalNP
-    return (remainingMoveNP[0], remainingMoveNP[1])
+    return mirrorVector2D(remainingMoveNP, collision.normal)

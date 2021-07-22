@@ -11,8 +11,8 @@ class MovableObject:
     yVel: float
 
     def __init__(self):
-        self.xPos, self.yPos = 0, 0
-        self.xVel, self.yVel = 0, 0
+        self.xPos, self.yPos = 0.0, 0.0
+        self.xVel, self.yVel = 0.0, 0.0
 
     def moveBy(self, xMove, yMove):
         self.xPos += xMove

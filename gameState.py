@@ -3,6 +3,7 @@ from utilities import (
     collisionBallBrick,
     collisionVectorSegment,
     distance,
+    mirrorVector2D,
     resolveCollision
 )
 import constants
@@ -17,18 +18,23 @@ class GameState:
     enemyPosition = 0
     playerScore = 0
     enemyScore = 0
+    # Flags used to not check the same collision twice
+    # 4 sides (order is the same as in sides), player and enemy.  Needs
+    # to be preserved between ticks
+    collisionsResolved: List[bool]
 
     def __init__(self) -> None:
         self.ball = objects.Ball(
-            x=constants.GAME_FIELD_SIZE[0]/2,
-            y=constants.GAME_FIELD_SIZE[1]/2
+            x=constants.BALL_STARTING_POS[0],
+            y=constants.BALL_STARTING_POS[1]
         )
-        self.ball.xVel = 1
-        self.ball.yVel = 1
+        self.ball.xVel = constants.BALL_STARTING_SPEED[0]
+        self.ball.yVel = constants.BALL_STARTING_SPEED[1]
         self.playerBrick = objects.Brick()
         self.enemyBrick = objects.Brick(
             x=constants.GAME_FIELD_SIZE[0]-constants.PLAYER_SIZE[0]
         )
+        self.collisionsResolved = [False]*6
 
     def tickState(self, t):
         curMove = (
@@ -70,23 +76,53 @@ class GameState:
             )
         )
         collisions: List[objects.Collision] = None
-        while collisions == None or len(collisions) > 0:
+        # Indexes in collisionsResolved list of found collisions
+        collisionsIDs: List[int] = []
+        while (
+            collisions == None
+            or (collisions
+                and distance(curStart, curEnd) != 0)    # Not magnitude of move!!!
+        ):
             # Find all possible collisions
             collisions = []
-            for side in sides:
-                collisions += collisionVectorSegment(
+            collisionsIDs = []
+            for i in range(len(sides)):
+                if self.collisionsResolved[i]:
+                    # Resolution of the collision skips only one
+                    # iteration
+                    self.collisionsResolved[i] = False
+                    continue
+                side = sides[i]
+                newCollisions = collisionVectorSegment(
                     curStart, curEnd, side[0], side[1]
                 )
-            collisions += collisionBallBrick(
-                self.ball,
-                self.playerBrick,
-                curMove
-            )
-            collisions += collisionBallBrick(
-                self.ball,
-                self.enemyBrick,
-                curMove
-            )
+                collisions += newCollisions
+                if newCollisions:
+                    collisionsIDs += [i]*len(newCollisions)
+            if self.collisionsResolved[4]:
+                self.collisionsResolved[4] = False
+            else:
+                newCollisions = collisionBallBrick(
+                    self.ball,
+                    self.playerBrick,
+                    curStart,
+                    curMove
+                )
+                collisions += newCollisions
+                if newCollisions:
+                    collisionsIDs += [4]*len(newCollisions)
+            if self.collisionsResolved[5]:
+                self.collisionsResolved[5] = False
+            else:
+                newCollisions = collisionBallBrick(
+                    self.ball,
+                    self.enemyBrick,
+                    curStart,
+                    curMove
+                )
+                collisions += newCollisions
+                if newCollisions:
+                    collisionsIDs += [5]*len(newCollisions)
             if len(collisions) == 0:
                 continue
             # Extract the one closest to the start (that does not
@@ -97,13 +133,16 @@ class GameState:
             # It is guaranteed that first entry exists as length check
             # for 0 is not passed
             closestCollision = collisions[0]
+            closestCollisionID = collisionsIDs[0]
             minDist = collisionsDist[0]
             for i in range(1, len(collisions)):
                 if collisionsDist[i] < minDist:
                     closestCollision = collisions[i]
+                    closestCollisionID = collisionsIDs[i]
                     minDist = collisionsDist[i]
 
             # Resolve the closest collision
+            print("Handled collision!")
             curMove = resolveCollision(
                 curStart,
                 curMove,
@@ -114,6 +153,11 @@ class GameState:
                 curStart[0] + curMove[0],
                 curStart[1] + curMove[1]
             )
+            (self.ball.xVel, self.ball.yVel) = mirrorVector2D(
+                (self.ball.xVel, self.ball.yVel),
+                closestCollision.normal
+            )
+            self.collisionsResolved[closestCollisionID] = True
         # No more collisions here
         curEnd = (
             curStart[0] + curMove[0],
