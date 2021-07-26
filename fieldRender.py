@@ -1,6 +1,8 @@
+from typing import List, Tuple
+
+import utilities
 import pygame
 import constants
-from typing import List, Tuple
 
 
 class PlayingFieldRenderer:
@@ -29,6 +31,7 @@ class PlayingFieldRenderer:
         )
         self.backgroundColor = backgroundColor
 
+
     def updateOrigins(self):
         resolution = self.window.get_size()
         self.fieldOrigin = (
@@ -40,18 +43,6 @@ class PlayingFieldRenderer:
             (resolution[1] - constants.GAME_FIELD_RENDER_SIZE[1]) / 2
         )
 
-    def __shiftCoordinates(self, coords):
-        """
-        Shifts any iterable coordinates by `fieldOrigin`
-        """
-        newCoords = []
-        for coord, offset in zip(coords, self.fieldOrigin):
-            newCoords.append(coord+offset)
-        # If the specified origin had less dimensions, leave remaining
-        # ones unchanged
-        if len(newCoords) < len(coords):
-            newCoords.extend(coords[len(newCoords):])
-        return newCoords
 
     def drawCircle(
         self,
@@ -69,7 +60,7 @@ class PlayingFieldRenderer:
         for shifted positions according to playing field's coordinates.  
         Return value: see `pygame.draw.circle` docs
         """
-        shiftedCenter = self.__shiftCoordinates(center)
+        shiftedCenter = utilities.changeOrigin(center, self.fieldOrigin, (0, 0))
         pygame.draw.circle(
             self.window,
             color,
@@ -81,6 +72,7 @@ class PlayingFieldRenderer:
             drawBottomLeft,
             drawBottomRight
         )
+
 
     def drawLine(
         self,
@@ -94,8 +86,8 @@ class PlayingFieldRenderer:
         for shifted center according to playing field's coordinates.  
         Return value: see `pygame.draw.circle` docs
         """
-        shiftedStart = self.__shiftCoordinates(startPos)
-        shiftedEnd = self.__shiftCoordinates(endPos)
+        shiftedStart = utilities.changeOrigin(startPos, self.fieldOrigin, (0, 0))
+        shiftedEnd = utilities.changeOrigin(endPos, self.fieldOrigin, (0, 0))
         pygame.draw.line(
             self.window,
             color,
@@ -103,6 +95,7 @@ class PlayingFieldRenderer:
             shiftedEnd,
             width
         )
+
 
     def drawRect(
         self,
@@ -118,7 +111,7 @@ class PlayingFieldRenderer:
 
         position = rect[:2]
         scale = rect[2:]
-        shiftedPos = self.__shiftCoordinates(position)
+        shiftedPos = utilities.changeOrigin(position, self.fieldOrigin, (0, 0))
         newRect = tuple(shiftedPos) + scale
         pygame.draw.rect(
             self.window,
@@ -131,6 +124,7 @@ class PlayingFieldRenderer:
             borderBottomLeftRadius,
             borderBottomRightRadius
         )
+
 
     def drawBackground(self):
         pygame.draw.rect(

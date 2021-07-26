@@ -2,17 +2,18 @@ from typing import Tuple
 import pygame
 import math
 
-from pygame.constants import NOEVENT
-import render
+import eventHandler
+import fieldRender
 import gameState
 import constants
 import utilities
+import inputProcessing
 
 
 class Game:
     quitGame: bool
     window: pygame.Surface
-    fieldRenderer: render.PlayingFieldRenderer
+    fieldRenderer: fieldRender.PlayingFieldRenderer
 
     def __init__(self):
         pygame.init()
@@ -20,36 +21,51 @@ class Game:
             constants.DEFAULT_RESOLUTION,
             pygame.RESIZABLE
         )
-        self.fieldRenderer = render.PlayingFieldRenderer(
+        self.fieldRenderer = fieldRender.PlayingFieldRenderer(
             self.window
         )
         self.clock = pygame.time.Clock()
         self.quitGame = False
 
-        self.game_state = gameState.GameState()
+        self.gameState = gameState.GameState()
+        
+        self.eventHandler = eventHandler.EventHandler()
+        self.mouseHandler = inputProcessing.MouseInput(
+            self.fieldRenderer,
+            self.gameState.playerBrick
+        )
+        # Controls
+        eventDict = self.eventHandler.eventFuncDict
+        pressDict = self.eventHandler.keyDownFuncDict
+        releaseDict = self.eventHandler.keyUpFuncDict
+
+        pressDict[pygame.K_UP] = print
+        eventDict[pygame.MOUSEMOTION] = self.mouseHandler.playerMouseInput
 
     def processInput(self):
-        event = pygame.event.poll()
-        if event.type == pygame.QUIT:
-            self.quitGame = True
-        elif event.type != pygame.NOEVENT:
-            pass
-            #print(event)
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                self.quitGame = True
+            elif event.type != pygame.NOEVENT:
+                self.eventHandler.handleEvent(event)
+                
+        pygame.event.clear()
 
     def updateState(self):
         self.clock.tick(constants.TICK_RATE_LIMIT)
-        self.game_state.tickState(self.clock.get_time())
+        self.gameState.tickState(self.clock.get_time())
 
     def render(self):
         # Draw background
         self.fieldRenderer.drawBackground()
 
         # Draw players
-        self.game_state.playerBrick.draw(self.fieldRenderer)
-        self.game_state.enemyBrick.draw(self.fieldRenderer)
+        self.gameState.playerBrick.draw(self.fieldRenderer)
+        self.gameState.enemyBrick.draw(self.fieldRenderer)
 
         # Draw the ball
-        self.game_state.ball.draw(self.fieldRenderer)
+        self.gameState.ball.draw(self.fieldRenderer)
 
         pygame.display.update()
 

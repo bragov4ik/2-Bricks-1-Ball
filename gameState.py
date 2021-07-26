@@ -1,19 +1,14 @@
 from typing import List
-from utilities import (
-    collisionBallBrick,
-    collisionVectorSegment,
-    distance,
-    mirrorVector2D,
-    resolveCollision
-)
+import utilities
+import collisions
 import constants
-import objects
+import customObjects
 
 
 class GameState:
-    ball: objects.Ball
-    playerBrick: objects.Brick
-    enemyBrick: objects.Brick
+    ball: customObjects.Ball
+    playerBrick: customObjects.Brick
+    enemyBrick: customObjects.Brick
     playerPosition = 0
     enemyPosition = 0
     playerScore = 0
@@ -22,16 +17,19 @@ class GameState:
     # 4 sides (order is the same as in sides), player and enemy.  Needs
     # to be preserved between ticks
     collisionsResolved: List[bool]
+    history = []
+    aboba = 0
+
 
     def __init__(self) -> None:
-        self.ball = objects.Ball(
+        self.ball = customObjects.Ball(
             x=constants.BALL_STARTING_POS[0],
             y=constants.BALL_STARTING_POS[1]
         )
         self.ball.xVel = constants.BALL_STARTING_SPEED[0]
         self.ball.yVel = constants.BALL_STARTING_SPEED[1]
-        self.playerBrick = objects.Brick()
-        self.enemyBrick = objects.Brick(
+        self.playerBrick = customObjects.Brick()
+        self.enemyBrick = customObjects.Brick(
             x=constants.GAME_FIELD_SIZE[0]-constants.PLAYER_SIZE[0]
         )
         self.collisionsResolved = [False]*6
@@ -49,6 +47,10 @@ class GameState:
             curStart[0] + curMove[0],
             curStart[1] + curMove[1]
         )
+        
+        # # DEBUG
+        # start = curStart
+        # # \DEBUG
 
         r = self.ball.xScale
         sides = (
@@ -75,16 +77,16 @@ class GameState:
                 )
             )
         )
-        collisions: List[objects.Collision] = None
+        collisionList: List[customObjects.Collision] = None
         # Indexes in collisionsResolved list of found collisions
         collisionsIDs: List[int] = []
         while (
-            collisions == None
-            or (collisions
-                and distance(curStart, curEnd) != 0)    # Not magnitude of move!!!
+            collisionList == None
+            or (collisionList
+                and utilities.distance(curStart, curEnd) != 0)    # Not magnitude of move!!!
         ):
             # Find all possible collisions
-            collisions = []
+            collisionList = []
             collisionsIDs = []
             for i in range(len(sides)):
                 if self.collisionsResolved[i]:
@@ -93,57 +95,56 @@ class GameState:
                     self.collisionsResolved[i] = False
                     continue
                 side = sides[i]
-                newCollisions = collisionVectorSegment(
+                newCollisions = collisions.collisionVectorSegment(
                     curStart, curEnd, side[0], side[1]
                 )
-                collisions += newCollisions
+                collisionList += newCollisions
                 if newCollisions:
                     collisionsIDs += [i]*len(newCollisions)
             if self.collisionsResolved[4]:
                 self.collisionsResolved[4] = False
             else:
-                newCollisions = collisionBallBrick(
+                newCollisions = collisions.collisionBallBrick(
                     self.ball,
                     self.playerBrick,
                     curStart,
                     curMove
                 )
-                collisions += newCollisions
+                collisionList += newCollisions
                 if newCollisions:
                     collisionsIDs += [4]*len(newCollisions)
             if self.collisionsResolved[5]:
                 self.collisionsResolved[5] = False
             else:
-                newCollisions = collisionBallBrick(
+                newCollisions = collisions.collisionBallBrick(
                     self.ball,
                     self.enemyBrick,
                     curStart,
                     curMove
                 )
-                collisions += newCollisions
+                collisionList += newCollisions
                 if newCollisions:
                     collisionsIDs += [5]*len(newCollisions)
-            if len(collisions) == 0:
+            if len(collisionList) == 0:
                 continue
             # Extract the one closest to the start (that does not
             # coincide with it to avoid handling one collision twice)
             collisionsDist = [
-                distance(curStart, col.position) for col in collisions
+                utilities.distance(curStart, col.position) for col in collisionList
             ]
             # It is guaranteed that first entry exists as length check
             # for 0 is not passed
-            closestCollision = collisions[0]
+            closestCollision = collisionList[0]
             closestCollisionID = collisionsIDs[0]
             minDist = collisionsDist[0]
-            for i in range(1, len(collisions)):
+            for i in range(1, len(collisionList)):
                 if collisionsDist[i] < minDist:
-                    closestCollision = collisions[i]
+                    closestCollision = collisionList[i]
                     closestCollisionID = collisionsIDs[i]
                     minDist = collisionsDist[i]
 
             # Resolve the closest collision
-            print("Handled collision!")
-            curMove = resolveCollision(
+            curMove = collisions.resolveCollision(
                 curStart,
                 curMove,
                 closestCollision
@@ -153,7 +154,7 @@ class GameState:
                 curStart[0] + curMove[0],
                 curStart[1] + curMove[1]
             )
-            (self.ball.xVel, self.ball.yVel) = mirrorVector2D(
+            (self.ball.xVel, self.ball.yVel) = utilities.mirrorVector2D(
                 (self.ball.xVel, self.ball.yVel),
                 closestCollision.normal
             )
@@ -165,3 +166,18 @@ class GameState:
         )
         self.ball.xPos = curEnd[0]
         self.ball.yPos = curEnd[1]
+
+        # # DEBUG
+        # self.history.append((start, curEnd))
+        # self.aboba += 1
+        # if self.aboba >= 100:
+        #     print("############################")
+        #     print("Jumps (curVec.Start - prevVec.End) :")
+        #     for i in range(1, len(self.history)):
+        #         curVec = self.history[i]
+        #         prevVec = self.history[i-1]
+        #         diff = (curVec[0][0] - prevVec[1][0], curVec[0][1] - prevVec[1][1])
+        #         #print("{}-{}={}".format(curVec[0], prevVec[1], diff))
+        #         print(diff)
+        # # \DEBUG
+

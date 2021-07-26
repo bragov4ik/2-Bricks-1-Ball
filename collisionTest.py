@@ -1,7 +1,8 @@
 from typing import Tuple, List
+from abc import ABC, abstractmethod
+
 import pygame
 import utilities
-from abc import ABC, abstractmethod
 
 
 class MovableObject(ABC):

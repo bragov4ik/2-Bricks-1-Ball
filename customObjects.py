@@ -1,7 +1,7 @@
 from typing import Tuple, List
 from abc import ABC, abstractmethod
 
-import render
+import fieldRender
 
 
 class MovableObject:
@@ -51,7 +51,7 @@ class Entity(MovableObject):
         self.yScale = 1.0
 
     @abstractmethod
-    def draw(self, renderer: render.PlayingFieldRenderer):
+    def draw(self, renderer: fieldRender.PlayingFieldRenderer):
         pass
 
 
@@ -71,7 +71,7 @@ class Ball(Entity):
         self.yScale = scale
         self.color = color
 
-    def draw(self, renderer: render.PlayingFieldRenderer):
+    def draw(self, renderer: fieldRender.PlayingFieldRenderer):
         renderer.drawCircle(
             self.color,
             (self.xPos, self.yPos),
@@ -96,7 +96,7 @@ class Brick(Entity):
         self.yScale = yScale
         self.color = color
 
-    def draw(self, renderer: render.PlayingFieldRenderer):
+    def draw(self, renderer: fieldRender.PlayingFieldRenderer):
         renderer.drawRect(
             self.color,
             (
@@ -106,3 +106,7 @@ class Brick(Entity):
                 self.yScale
             )
         )
+    
+    
+    def movePlayerTo(self, y):
+        self.yPos = y
