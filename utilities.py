@@ -1,7 +1,9 @@
 from math import sqrt
 from typing import List, NamedTuple, Tuple
-
 import numpy as np
+import traceback
+
+import constants
 
 
 def distance(
@@ -44,16 +46,21 @@ def pointInBox(
     boxCorner1: Tuple[float, float],
     boxCorner2: Tuple[float, float]
 ) -> bool:
+    # As was found in debugging, sometimes computing error cause
+    # the algorithm believe that the collision point is located outside
+    # the segments (usually at scale of 1e-15).  It seems to happen only
+    # on horizontal lines.  Thus, let's add some margin of error.
     minCorner = (
-        min(boxCorner1[0], boxCorner2[0]),
+        min(boxCorner1[0], boxCorner2[0]) - constants.ERROR_MARGIN,
         min(boxCorner1[1], boxCorner2[1])
     )
     maxCorner = (
-        max(boxCorner1[0], boxCorner2[0]),
+        max(boxCorner1[0], boxCorner2[0]) + constants.ERROR_MARGIN,
         max(boxCorner1[1], boxCorner2[1])
     )
+
     return (minCorner[0] <= point[0] <= maxCorner[0]
-            and minCorner[1] <= point[1] <= maxCorner[1])
+        and minCorner[1] <= point[1] <= maxCorner[1])
 
 
 def rotationMatrix2D(

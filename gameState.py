@@ -13,9 +13,9 @@ class GameState:
     enemyPosition = 0
     playerScore = 0
     enemyScore = 0
-    # Flags used to not check the same collision twice
-    # 4 sides (order is the same as in sides), player and enemy.  Needs
-    # to be preserved between ticks
+    # Flags used to not check the same collision twice.
+    # 4 sides : LEFT, UP, RIGHT, DOWN, player and enemy.  Needs to be 
+    # preserved between ticks
     collisionsResolved: List[bool]
     history = []
     aboba = 0
@@ -24,13 +24,19 @@ class GameState:
     def __init__(self) -> None:
         self.ball = customObjects.Ball(
             x=constants.BALL_STARTING_POS[0],
-            y=constants.BALL_STARTING_POS[1]
+            y=constants.BALL_STARTING_POS[1],
+            scale=constants.BALL_RADIUS
         )
         self.ball.xVel = constants.BALL_STARTING_SPEED[0]
         self.ball.yVel = constants.BALL_STARTING_SPEED[1]
-        self.playerBrick = customObjects.Brick()
+        self.playerBrick = customObjects.Brick(
+            xScale=constants.PLAYER_SIZE[0],
+            yScale=constants.PLAYER_SIZE[1]
+        )
         self.enemyBrick = customObjects.Brick(
-            x=constants.GAME_FIELD_SIZE[0]-constants.PLAYER_SIZE[0]
+            x=constants.GAME_FIELD_SIZE[0]-constants.PLAYER_SIZE[0],
+            xScale=constants.PLAYER_SIZE[0],
+            yScale=constants.PLAYER_SIZE[1]
         )
         self.collisionsResolved = [False]*6
 
@@ -47,12 +53,9 @@ class GameState:
             curStart[0] + curMove[0],
             curStart[1] + curMove[1]
         )
-        
-        # # DEBUG
-        # start = curStart
-        # # \DEBUG
 
         r = self.ball.xScale
+        # LEFT, UP, RIGHT, DOWN
         sides = (
             (
                 (r, r),
@@ -63,14 +66,14 @@ class GameState:
                 (-r+constants.GAME_FIELD_SIZE[0], r)
             ),
             (
-                (r, -r+constants.GAME_FIELD_SIZE[1]),
+                (-r+constants.GAME_FIELD_SIZE[0], r),
                 (
                     -r+constants.GAME_FIELD_SIZE[0],
                     -r+constants.GAME_FIELD_SIZE[1]
                 )
             ),
             (
-                (-r+constants.GAME_FIELD_SIZE[0], r),
+                (r, -r+constants.GAME_FIELD_SIZE[1]),
                 (
                     -r+constants.GAME_FIELD_SIZE[0],
                     -r+constants.GAME_FIELD_SIZE[1]

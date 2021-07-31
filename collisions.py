@@ -4,6 +4,8 @@ import numpy as np
 
 import customObjects
 import utilities
+import constants
+
 
 def collisionVectorCircle(
     vecStart: Tuple[float, float],
@@ -158,7 +160,7 @@ def collisionVectorSegment(
             closestPoint = None
             minDistance = None
             for point in pointsOfInterest:
-                distance = distance(point, vecStart)
+                distance = utilities.distance(point, vecStart)
                 if (utilities.pointInBox(point, vecStart, vecEnd)
                     and utilities.pointInBox(point, segStart, segEnd)
                     and (minDistance == None
@@ -373,4 +375,10 @@ def resolveCollision(
     moveToCollisionNP: np.ndarray = np.array(
         collision.position) - np.array(startPos)
     remainingMoveNP: np.ndarray = moveNP - moveToCollisionNP
-    return utilities.mirrorVector2D(remainingMoveNP, collision.normal)
+    remainingMoveNP = np.array(
+        utilities.mirrorVector2D(
+            remainingMoveNP,
+            collision.normal
+        )
+    )
+    return remainingMoveNP
