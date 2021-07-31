@@ -10,16 +10,12 @@ class GameState:
     ball: customObjects.Ball
     playerBrick: customObjects.Player
     enemyBrick: customObjects.Player
-    playerPosition = 0
-    enemyPosition = 0
-    playerScore = 0
-    enemyScore = 0
+    playerScore: int
+    enemyScore: int
     # Flags used to not check the same collision twice.
     # 4 sides : LEFT, UP, RIGHT, DOWN, player and enemy.  Needs to be
     # preserved between ticks
     collisionsResolved: List[bool]
-    history = []
-    aboba = 0
 
     def __init__(self) -> None:
         self.ball = customObjects.Ball(
@@ -38,6 +34,8 @@ class GameState:
             xScale=constants.PLAYER_SIZE[0],
             yScale=constants.PLAYER_SIZE[1]
         )
+        self.playerScore = 0
+        self.enemyScore = 0
         self.collisionsResolved = [False]*6
 
     def tickState(self, t):
@@ -193,6 +191,18 @@ class GameState:
             closestCollision = closest[0]
             closestCollisionID = collisionsIDs[closest[1]]
 
+            # If the collision happens with the walls, update the score
+            # and reset the game
+            if closestCollisionID in (0, 2):
+                if closestCollisionID == 0:
+                    # LEFT wall
+                    self.enemyScore += 1
+                elif closestCollisionID == 2:
+                    # RIGHT wall
+                    self.playerScore += 1
+                self.restartGame()
+                return
+
             # Resolve the closest collision
             curMove = collisions.resolveCollision(
                 curStart,
@@ -216,3 +226,20 @@ class GameState:
         )
         self.ball.xPos = curEnd[0]
         self.ball.yPos = curEnd[1]
+
+
+    def restartGame(self):
+        self.ball.xPos = constants.BALL_STARTING_POS[0]
+        self.ball.yPos = constants.BALL_STARTING_POS[1]
+        self.ball.xVel = constants.BALL_STARTING_SPEED[0]
+        self.ball.yVel = constants.BALL_STARTING_SPEED[1]
+        self.playerBrick.xPos = 0.0
+        self.playerBrick.yPos = 0.0
+        self.playerBrick.desiredMove[0] = 0.0
+        self.playerBrick.desiredMove[1] = 0.0
+        self.enemyBrick.xPos = (constants.GAME_FIELD_SIZE[0]
+                                - constants.PLAYER_SIZE[0])
+        self.enemyBrick.yPos = 0.0
+        self.enemyBrick.desiredMove[0] = 0.0
+        self.enemyBrick.desiredMove[1] = 0.0
+        self.collisionsResolved = [False]*6
