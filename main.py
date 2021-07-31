@@ -25,7 +25,7 @@ class Game:
         self.quitGame = False
 
         self.gameState = gameState.GameState()
-        
+
         self.eventHandler = eventHandler.EventHandler()
         self.mouseHandler = inputProcessing.MouseInput(
             self.fieldRenderer,
@@ -46,7 +46,7 @@ class Game:
                 self.quitGame = True
             elif event.type != pygame.NOEVENT:
                 self.eventHandler.handleEvent(event)
-                
+
         pygame.event.clear()
 
     def updateState(self):

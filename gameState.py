@@ -1,4 +1,5 @@
-from typing import List
+from math import copysign
+from typing import List, Type
 import utilities
 import collisions
 import constants
@@ -7,19 +8,18 @@ import customObjects
 
 class GameState:
     ball: customObjects.Ball
-    playerBrick: customObjects.Brick
-    enemyBrick: customObjects.Brick
+    playerBrick: customObjects.Player
+    enemyBrick: customObjects.Player
     playerPosition = 0
     enemyPosition = 0
     playerScore = 0
     enemyScore = 0
     # Flags used to not check the same collision twice.
-    # 4 sides : LEFT, UP, RIGHT, DOWN, player and enemy.  Needs to be 
+    # 4 sides : LEFT, UP, RIGHT, DOWN, player and enemy.  Needs to be
     # preserved between ticks
     collisionsResolved: List[bool]
     history = []
     aboba = 0
-
 
     def __init__(self) -> None:
         self.ball = customObjects.Ball(
@@ -29,11 +29,11 @@ class GameState:
         )
         self.ball.xVel = constants.BALL_STARTING_SPEED[0]
         self.ball.yVel = constants.BALL_STARTING_SPEED[1]
-        self.playerBrick = customObjects.Brick(
+        self.playerBrick = customObjects.Player(
             xScale=constants.PLAYER_SIZE[0],
             yScale=constants.PLAYER_SIZE[1]
         )
-        self.enemyBrick = customObjects.Brick(
+        self.enemyBrick = customObjects.Player(
             x=constants.GAME_FIELD_SIZE[0]-constants.PLAYER_SIZE[0],
             xScale=constants.PLAYER_SIZE[0],
             yScale=constants.PLAYER_SIZE[1]
@@ -41,6 +41,57 @@ class GameState:
         self.collisionsResolved = [False]*6
 
     def tickState(self, t):
+        # Players' moves
+        for player in (self.playerBrick, self.enemyBrick):
+            # Convert the problem of moving brick into a ball to
+            # moving ball into a brick (we see brick as the point of
+            # reference), since we already have such collision checking
+            # implemented.
+
+            # The ball therefore moves in opposite direction (as
+            # point of reference has changed)
+            ballMove = (
+                -player.desiredMove[0],
+                -player.desiredMove[1]
+            )
+            ballPos = (self.ball.xPos, self.ball.yPos)
+
+            # Get the collision point
+            returnedVal = collisions.getClosestCollision(
+                ballPos,
+                collisions.collisionBallBrick(
+                    self.ball, player, ballPos, ballMove
+                )
+            )
+            if returnedVal == None:
+                # No collisions with the ball, can move freely
+                player.moveBy(player.desiredMove[0], player.desiredMove[1])
+                player.setDesiredMove(0.0, 0.0)
+            else:
+                # Collision found! Handle:
+                (collision, _) = returnedVal
+
+                # Player's move would be the vector starting from the
+                # collision point to the ball
+
+                # x component is always static, so let's leave it
+                yPlayerMove = ballPos[1] - collision.position[1]
+                # To prevent repeated colliding with the ball (since
+                # it causes the ball to bounce inside the brick), add
+                # a little gap.
+                yPlayerMove = (yPlayerMove
+                               - copysign(
+                                   constants.ERROR_MARGIN,
+                                   yPlayerMove
+                               ))
+                newPlayerMove = (
+                    0,
+                    yPlayerMove
+                )
+                player.moveBy(newPlayerMove[0], newPlayerMove[1])
+                player.setDesiredMove(0.0, 0.0)
+
+        # Ball physics
         curMove = (
             self.ball.xVel*t*1e-1,
             self.ball.yVel*t*1e-1
@@ -130,21 +181,17 @@ class GameState:
                     collisionsIDs += [5]*len(newCollisions)
             if len(collisionList) == 0:
                 continue
-            # Extract the one closest to the start (that does not
-            # coincide with it to avoid handling one collision twice)
-            collisionsDist = [
-                utilities.distance(curStart, col.position) for col in collisionList
-            ]
-            # It is guaranteed that first entry exists as length check
-            # for 0 is not passed
-            closestCollision = collisionList[0]
-            closestCollisionID = collisionsIDs[0]
-            minDist = collisionsDist[0]
-            for i in range(1, len(collisionList)):
-                if collisionsDist[i] < minDist:
-                    closestCollision = collisionList[i]
-                    closestCollisionID = collisionsIDs[i]
-                    minDist = collisionsDist[i]
+
+            # Extract the one closest to the start
+            closest = collisions.getClosestCollision(
+                curStart,
+                collisionList
+            )
+            if closest == None:
+                # Must not happen as length check for 0 is not passed
+                raise IndexError("No collisions to handle!")
+            closestCollision = closest[0]
+            closestCollisionID = collisionsIDs[closest[1]]
 
             # Resolve the closest collision
             curMove = collisions.resolveCollision(
@@ -169,18 +216,3 @@ class GameState:
         )
         self.ball.xPos = curEnd[0]
         self.ball.yPos = curEnd[1]
-
-        # # DEBUG
-        # self.history.append((start, curEnd))
-        # self.aboba += 1
-        # if self.aboba >= 100:
-        #     print("############################")
-        #     print("Jumps (curVec.Start - prevVec.End) :")
-        #     for i in range(1, len(self.history)):
-        #         curVec = self.history[i]
-        #         prevVec = self.history[i-1]
-        #         diff = (curVec[0][0] - prevVec[1][0], curVec[0][1] - prevVec[1][1])
-        #         #print("{}-{}={}".format(curVec[0], prevVec[1], diff))
-        #         print(diff)
-        # # \DEBUG
-

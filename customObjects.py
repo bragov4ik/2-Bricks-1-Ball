@@ -106,7 +106,31 @@ class Brick(Entity):
                 self.yScale
             )
         )
-    
-    
-    def movePlayerTo(self, y):
-        self.yPos = y
+
+
+class Player(Brick):
+    # Used to move the player without colliding through the ball or
+    # other objects
+    desiredMove: List[float]
+
+    def __init__(
+            self,
+            x: float = 0.0,
+            y: float = 0.0,
+            xScale: float = 10,
+            yScale: float = 60,
+            color: Tuple[int, int, int] = (255, 255, 255)):
+        super().__init__(x, y, xScale, yScale, color)
+        self.desiredMove = [0.0, 0.0]
+
+    def setDesiredMove(
+        self,
+        x: float,
+        y: float
+    ) -> None:
+        """
+        The player will attempt to move by this vector, however it will
+        stop at the first collision along the move.
+        """
+        self.desiredMove[0] = x
+        self.desiredMove[1] = y

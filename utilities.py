@@ -1,7 +1,6 @@
 from math import sqrt
-from typing import List, NamedTuple, Tuple
+from typing import Tuple
 import numpy as np
-import traceback
 
 import constants
 
@@ -60,7 +59,7 @@ def pointInBox(
     )
 
     return (minCorner[0] <= point[0] <= maxCorner[0]
-        and minCorner[1] <= point[1] <= maxCorner[1])
+            and minCorner[1] <= point[1] <= maxCorner[1])
 
 
 def rotationMatrix2D(

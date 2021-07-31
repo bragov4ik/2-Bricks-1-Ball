@@ -31,7 +31,6 @@ class PlayingFieldRenderer:
         )
         self.backgroundColor = backgroundColor
 
-
     def updateOrigins(self):
         resolution = self.window.get_size()
         self.fieldOrigin = (
@@ -42,7 +41,6 @@ class PlayingFieldRenderer:
             (resolution[0] - constants.GAME_FIELD_RENDER_SIZE[0]) / 2,
             (resolution[1] - constants.GAME_FIELD_RENDER_SIZE[1]) / 2
         )
-
 
     def drawCircle(
         self,
@@ -60,7 +58,8 @@ class PlayingFieldRenderer:
         for shifted positions according to playing field's coordinates.  
         Return value: see `pygame.draw.circle` docs
         """
-        shiftedCenter = utilities.changeOrigin(center, self.fieldOrigin, (0, 0))
+        shiftedCenter = utilities.changeOrigin(
+            center, self.fieldOrigin, (0, 0))
         pygame.draw.circle(
             self.window,
             color,
@@ -72,7 +71,6 @@ class PlayingFieldRenderer:
             drawBottomLeft,
             drawBottomRight
         )
-
 
     def drawLine(
         self,
@@ -86,7 +84,8 @@ class PlayingFieldRenderer:
         for shifted center according to playing field's coordinates.  
         Return value: see `pygame.draw.circle` docs
         """
-        shiftedStart = utilities.changeOrigin(startPos, self.fieldOrigin, (0, 0))
+        shiftedStart = utilities.changeOrigin(
+            startPos, self.fieldOrigin, (0, 0))
         shiftedEnd = utilities.changeOrigin(endPos, self.fieldOrigin, (0, 0))
         pygame.draw.line(
             self.window,
@@ -95,7 +94,6 @@ class PlayingFieldRenderer:
             shiftedEnd,
             width
         )
-
 
     def drawRect(
         self,
@@ -124,7 +122,6 @@ class PlayingFieldRenderer:
             borderBottomLeftRadius,
             borderBottomRightRadius
         )
-
 
     def drawBackground(self):
         pygame.draw.rect(

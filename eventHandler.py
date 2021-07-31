@@ -21,7 +21,6 @@ class EventHandler:
     keyUpFuncDict: Dict[
         int, Callable
     ]
-    
 
     def __init__(self):
         self.eventFuncDict = {}
@@ -30,18 +29,15 @@ class EventHandler:
         self.eventFuncDict[pygame.KEYDOWN] = self.keyDown
         self.eventFuncDict[pygame.KEYUP] = self.keyUp
 
-
     def handleEvent(self, event):
         if event.type in self.eventFuncDict:
             self.eventFuncDict[event.type](event)
 
-    
     def keyDown(self, event):
         key = event.__dict__["key"]
         if key in self.keyDownFuncDict:
             self.keyDownFuncDict[key](event)
 
-    
     def keyUp(self, event):
         key = event.__dict__["key"]
         if key in self.keyUpFuncDict:

@@ -1,4 +1,4 @@
-from typing import List, NamedTuple, Tuple
+from typing import List, NamedTuple, Tuple, Type
 from math import sqrt
 import numpy as np
 
@@ -236,7 +236,7 @@ class Stadium(NamedTuple):
 
 def brickBallToStadium(
     ball: customObjects.Ball,
-    brick: customObjects.Brick
+    brick: Type[customObjects.Brick]
 ) -> Stadium:
     """
     Converts the brick (rectangle) into a stadium (rectangle with
@@ -298,7 +298,7 @@ def brickBallToStadium(
 
 def collisionBallBrick(
     ball: customObjects.Ball,
-    brick: customObjects.Brick,
+    brick: Type[customObjects.Brick],
     movementStart: Tuple[float, float],
     movementVec: Tuple[float, float]
 ) -> List[customObjects.Collision]:
@@ -382,3 +382,29 @@ def resolveCollision(
         )
     )
     return remainingMoveNP
+
+
+def getClosestCollision(
+    point: Tuple[float, float],
+    collisions: List[customObjects.Collision]
+) -> Tuple[customObjects.Collision, int]:
+    """
+    Returns closest collision from the provided list to the given point,
+    as well as its index in the list.  If empty list is recieved, None
+    is returned
+    """
+    collisionsDist = [
+        utilities.distance(point, col.position) for col in collisions
+    ]
+    if len(collisions) > 0:
+        closestCollision = collisions[0]
+        closestCollisionIndex = 0
+        minDist = collisionsDist[0]
+        for i in range(1, len(collisions)):
+            if collisionsDist[i] < minDist:
+                closestCollision = collisions[i]
+                closestCollisionIndex = i
+                minDist = collisionsDist[i]
+        return (closestCollision, closestCollisionIndex)
+    else:
+        return None

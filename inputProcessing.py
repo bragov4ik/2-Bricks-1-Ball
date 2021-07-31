@@ -6,17 +6,15 @@ import constants
 
 class MouseInput:
     renderer: fieldRender.PlayingFieldRenderer
-    playerObject: customObjects.Brick
-
+    playerObject: customObjects.Player
 
     def __init__(
         self,
         renderer: fieldRender.PlayingFieldRenderer,
-        playerObject: customObjects.Brick
+        playerObject: customObjects.Player
     ):
         self.renderer = renderer
         self.playerObject = playerObject
-
 
     def playerMouseInput(self, event):
         pos = event.__dict__["pos"]
@@ -26,7 +24,10 @@ class MouseInput:
         newOrigin = self.renderer.fieldOrigin
         newOrigin = (newOrigin[0], newOrigin[1] + constants.PLAYER_SIZE[1]/2)
         pos = utilities.changeOrigin(pos, (0, 0), newOrigin)
-        y = pos[1]
+        yDesired = pos[1]
+
+        # Clamp the position
         yLimit = constants.GAME_FIELD_SIZE[1] - constants.PLAYER_SIZE[1]
-        y = max(0, min(y, yLimit))
-        self.playerObject.movePlayerTo(y)
+        yDesired = max(0, min(yDesired, yLimit))
+
+        self.playerObject.setDesiredMove(0, yDesired - self.playerObject.yPos)
