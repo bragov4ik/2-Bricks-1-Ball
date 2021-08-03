@@ -2,9 +2,9 @@ from typing import List, NamedTuple, Tuple, Type
 from math import sqrt
 import numpy as np
 
-import customObjects
-import utilities
-import constants
+import library.customObjects
+import library.utilities
+import library.constants
 
 
 def collisionVectorCircle(
@@ -12,7 +12,7 @@ def collisionVectorCircle(
     vecEnd: Tuple[float, float],
     circOrig: Tuple[float, float],
     circR: float
-) -> List[customObjects.Collision]:
+) -> List[library.customObjects.Collision]:
     """
     Detects if the vector between 2 given points intersects with the 
     circle (defined by origin and radius as tuples).
@@ -69,13 +69,13 @@ def collisionVectorCircle(
     # Filter out intersections outside the segment
     resultInSegment = []
     for point in result:
-        if utilities.pointInBox(point, vecStart, vecEnd):
+        if library.utilities.pointInBox(point, vecStart, vecEnd):
             resultInSegment.append(point)
 
     # Find normals
     collisions = []
     for point in resultInSegment:
-        nextCol = customObjects.Collision()
+        nextCol = library.customObjects.Collision()
         nextCol.position = point
         # It lies on the circle, so we can easily find normal vector
         normal = (
@@ -92,7 +92,7 @@ def collisionVectorSegment(
     vecEnd: Tuple[float, float],
     segStart: Tuple[float, float],
     segEnd: Tuple[float, float]
-) -> List[customObjects.Collision]:
+) -> List[library.customObjects.Collision]:
     """
     Finds collision of a vector into a segment, if any.  If they are
     parallel, empty list is returned.  In case of (partly) coinciding
@@ -103,13 +103,13 @@ def collisionVectorSegment(
     # Find the normal right away
     # Doesn't matter which side of the segment the normal should face
     normal: np.ndarray = (
-        utilities.rotationMatrix2D(np.math.pi/2)
+        library.utilities.rotationMatrix2D(np.math.pi/2)
         @ np.array([segEnd[0]-segStart[0], segEnd[1]-segStart[1]]))
     # Evaluate formulae for lines for segment and vector in form of
     # ax + by = c
     coefficients = np.array([
-        utilities.lineEqtnFrom2Points(vecStart, vecEnd),
-        utilities.lineEqtnFrom2Points(segStart, segEnd)
+        library.utilities.lineEqtnFrom2Points(vecStart, vecEnd),
+        library.utilities.lineEqtnFrom2Points(segStart, segEnd)
     ])
     # Az = b; z = (x, y)
     A = np.copy(coefficients[:, :2])
@@ -117,10 +117,10 @@ def collisionVectorSegment(
     if np.linalg.det(A) != 0:
         # Invertible matrix, the unique solution exists
         solution = (np.linalg.inv(A) @ b).flatten().tolist()
-        if (utilities.pointInBox(solution, vecStart, vecEnd)
-                and utilities.pointInBox(solution, segStart, segEnd)):
+        if (library.utilities.pointInBox(solution, vecStart, vecEnd)
+                and library.utilities.pointInBox(solution, segStart, segEnd)):
             # The intersection is in the segment and the vector
-            col = customObjects.Collision()
+            col = library.customObjects.Collision()
             col.position = (solution[0], solution[1])
             col.normal = (normal[0], normal[1])
             return [col]
@@ -160,9 +160,9 @@ def collisionVectorSegment(
             closestPoint = None
             minDistance = None
             for point in pointsOfInterest:
-                distance = utilities.distance(point, vecStart)
-                if (utilities.pointInBox(point, vecStart, vecEnd)
-                    and utilities.pointInBox(point, segStart, segEnd)
+                distance = library.utilities.distance(point, vecStart)
+                if (library.utilities.pointInBox(point, vecStart, vecEnd)
+                    and library.utilities.pointInBox(point, segStart, segEnd)
                     and (minDistance == None
                          or minDistance > distance)):
                     # The point belongs to both segment and vector and
@@ -172,7 +172,7 @@ def collisionVectorSegment(
             if closestPoint == None:
                 return []
             else:
-                col = customObjects.Collision()
+                col = library.customObjects.Collision()
                 col.position = (closestPoint[0], closestPoint[1])
                 col.normal = (normal[0], normal[1])
                 return [col]
@@ -235,8 +235,8 @@ class Stadium(NamedTuple):
 
 
 def brickBallToStadium(
-    ball: customObjects.Ball,
-    brick: Type[customObjects.Brick]
+    ball: library.customObjects.Ball,
+    brick: Type[library.customObjects.Brick]
 ) -> Stadium:
     """
     Converts the brick (rectangle) into a stadium (rectangle with
@@ -297,11 +297,11 @@ def brickBallToStadium(
 
 
 def collisionBallBrick(
-    ball: customObjects.Ball,
-    brick: Type[customObjects.Brick],
+    ball: library.customObjects.Ball,
+    brick: Type[library.customObjects.Brick],
     movementStart: Tuple[float, float],
     movementVec: Tuple[float, float]
-) -> List[customObjects.Collision]:
+) -> List[library.customObjects.Collision]:
     """
     Finds collision(-s) of the ball moving into the brick.
     @returns List with collision object(-s) if they collide, empty
@@ -337,7 +337,7 @@ def collisionBallBrick(
         movementStart[0] + movementVec[0],
         movementStart[1] + movementVec[1]
     )
-    collisions: List[customObjects.Collision] = []
+    collisions: List[library.customObjects.Collision] = []
     # Check collisions with sides
     for side in sSides:
         collisions += collisionVectorSegment(
@@ -355,7 +355,7 @@ def collisionBallBrick(
             corner[1]
         )
         for nextCollision in newCollisions:
-            if utilities.pointInBox(nextCollision.position, box[0], box[1]):
+            if library.utilities.pointInBox(nextCollision.position, box[0], box[1]):
                 collisions.append(nextCollision)
 
     return collisions
@@ -364,7 +364,7 @@ def collisionBallBrick(
 def resolveCollision(
     startPos: Tuple[float, float],
     moveVec: Tuple[float, float],
-    collision: customObjects.Collision
+    collision: library.customObjects.Collision
 ) -> Tuple[float, float]:
     """
     Calculates remaining move vector given the move and collision.  
@@ -376,7 +376,7 @@ def resolveCollision(
         collision.position) - np.array(startPos)
     remainingMoveNP: np.ndarray = moveNP - moveToCollisionNP
     remainingMoveNP = np.array(
-        utilities.mirrorVector2D(
+        library.utilities.mirrorVector2D(
             remainingMoveNP,
             collision.normal
         )
@@ -386,15 +386,15 @@ def resolveCollision(
 
 def getClosestCollision(
     point: Tuple[float, float],
-    collisions: List[customObjects.Collision]
-) -> Tuple[customObjects.Collision, int]:
+    collisions: List[library.customObjects.Collision]
+) -> Tuple[library.customObjects.Collision, int]:
     """
     Returns closest collision from the provided list to the given point,
     as well as its index in the list.  If empty list is recieved, None
     is returned
     """
     collisionsDist = [
-        utilities.distance(point, col.position) for col in collisions
+        library.utilities.distance(point, col.position) for col in collisions
     ]
     if len(collisions) > 0:
         closestCollision = collisions[0]

@@ -37,6 +37,8 @@ SCORE_DELIMITER = ':'
 # imprecisions e.g. in matrix operations)
 ERROR_MARGIN = 1e-10
 
-class gameStatus(Enum):
+class GameStatus(Enum):
     PAUSE = 0
     RUNNING = 1
+
+WELCOME_MESSAGE = "Hello, I want to play!"

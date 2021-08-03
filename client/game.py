@@ -1,47 +1,47 @@
 import pygame
 import pygame.freetype
 
-import eventHandler
-import fieldRender
-import gameState
-import constants
-import inputProcessing
+import client.eventHandler
+import client.fieldRender
+import client.gameState
+import library.constants
+import client.inputProcessing
 
 class Game:
     quitGame: bool
-    status: constants.gameStatus
+    status: library.constants.GameStatus
     window: pygame.Surface
-    fieldRenderer: fieldRender.PlayingFieldRenderer
+    fieldRenderer: client.fieldRender.PlayingFieldRenderer
 
     def __init__(self):
         pygame.init()
         pygame.freetype.init()
         self.window = pygame.display.set_mode(
-            constants.DEFAULT_RESOLUTION,
+            library.constants.DEFAULT_RESOLUTION,
             pygame.RESIZABLE
         )
-        self.fieldRenderer = fieldRender.PlayingFieldRenderer(
+        self.fieldRenderer = client.fieldRender.PlayingFieldRenderer(
             self.window
         )
         self.clock = pygame.time.Clock()
         self.quitGame = False
-        self.status = constants.gameStatus.RUNNING
+        self.status = library.constants.GameStatus.RUNNING
 
-        self.gameState = gameState.GameState()
+        self.gameState = client.gameState.GameState()
 
-        self.eventHandler = eventHandler.EventHandler()
-        self.mouseHandler = inputProcessing.MouseInput(
+        self.eventProcessor = client.eventHandler.EventHandler()
+        self.mouseProcessor = client.inputProcessing.MouseInput(
             self.fieldRenderer,
             self.gameState.playerBrick
         )
 
         # Controls
-        eventDict = self.eventHandler.eventFuncDict
-        pressDict = self.eventHandler.keyDownFuncDict
-        releaseDict = self.eventHandler.keyUpFuncDict
+        eventDict = self.eventProcessor.event_func_dict
+        pressDict = self.eventProcessor.keydown_func_dict
+        releaseDict = self.eventProcessor.keyup_func_dict
 
         pressDict[pygame.K_UP] = print
-        eventDict[pygame.MOUSEMOTION] = self.mouseHandler.playerMouseInput
+        eventDict[pygame.MOUSEMOTION] = self.mouseProcessor.playerMouseInput
 
     def processInput(self):
         events = pygame.event.get()
@@ -49,18 +49,18 @@ class Game:
             if event.type == pygame.QUIT:
                 self.quitGame = True
             elif event.type != pygame.NOEVENT:
-                self.eventHandler.handleEvent(event)
+                self.eventProcessor.handleEvent(event)
 
         pygame.event.clear()
 
     def updateState(self):
-        self.clock.tick(constants.TICK_RATE_LIMIT)
-        if self.status == constants.gameStatus.RUNNING:
+        self.clock.tick(library.constants.TICK_RATE_LIMIT)
+        if self.status == library.constants.GameStatus.RUNNING:
             self.gameState.tickState(self.clock.get_time())
         
 
     def render(self):
-        if self.status == constants.gameStatus.RUNNING:
+        if self.status == library.constants.GameStatus.RUNNING:
             # Draw field
             self.fieldRenderer.drawBackground()
             self.fieldRenderer.drawScore(

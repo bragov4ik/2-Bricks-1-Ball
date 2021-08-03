@@ -2,7 +2,7 @@ from typing import Tuple, List
 from abc import ABC, abstractmethod
 
 import pygame
-import utilities
+import library.utilities
 
 
 class MovableObject(ABC):
@@ -294,7 +294,7 @@ class DemoSegCirc(Game):
         self.reinitCollisions()
 
     def reinitCollisions(self):
-        collisions = utilities.collisionVectorCircle(
+        collisions = library.utilities.collisionVectorCircle(
             self.segment.start.location,
             self.segment.end.location,
             self.circle.center.location,
@@ -303,7 +303,7 @@ class DemoSegCirc(Game):
         self.collisions = []
         for col in collisions:
             # Don't draw if outside the segment
-            if not utilities.pointInBox(
+            if not library.utilities.pointInBox(
                 col,
                 self.segment.start.location,
                 self.segment.end.location
@@ -380,7 +380,7 @@ class Demo2Seg(Game):
         self.reinitCollisions()
 
     def reinitCollisions(self):
-        collisions = utilities.collisionVectorSegment(
+        collisions = library.utilities.collisionVectorSegment(
             vecStart=self.segment1.start.location,
             vecEnd=self.segment1.end.location,
             segStart=self.segment2.start.location,
