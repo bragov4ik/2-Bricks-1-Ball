@@ -4,14 +4,14 @@ import pygame.freetype
 import client.eventHandler
 import client.fieldRender
 import client.gameState
-import library.constants
 import client.inputProcessing
+import library.constants
 
 class Game:
-    quitGame: bool
+    quit_game: bool
     status: library.constants.GameStatus
     window: pygame.Surface
-    fieldRenderer: client.fieldRender.PlayingFieldRenderer
+    field_renderer: client.fieldRender.PlayingFieldRenderer
 
     def __init__(self):
         pygame.init()
@@ -20,66 +20,66 @@ class Game:
             library.constants.DEFAULT_RESOLUTION,
             pygame.RESIZABLE
         )
-        self.fieldRenderer = client.fieldRender.PlayingFieldRenderer(
+        self.field_renderer = client.fieldRender.PlayingFieldRenderer(
             self.window
         )
         self.clock = pygame.time.Clock()
-        self.quitGame = False
+        self.quit_game = False
         self.status = library.constants.GameStatus.RUNNING
 
-        self.gameState = client.gameState.GameState()
+        self.game_state = client.gameState.GameState()
 
-        self.eventProcessor = client.eventHandler.EventHandler()
-        self.mouseProcessor = client.inputProcessing.MouseInput(
-            self.fieldRenderer,
-            self.gameState.playerBrick
+        self.event_processor = client.eventHandler.EventHandler()
+        self.mouse_processor = client.inputProcessing.MouseInput(
+            self.field_renderer,
+            self.game_state.player_brick
         )
 
         # Controls
-        eventDict = self.eventProcessor.event_func_dict
-        pressDict = self.eventProcessor.keydown_func_dict
-        releaseDict = self.eventProcessor.keyup_func_dict
+        event_dict = self.event_processor.event_func_dict
+        press_dict = self.event_processor.keydown_func_dict
+        release_dict = self.event_processor.keyup_func_dict
 
-        pressDict[pygame.K_UP] = print
-        eventDict[pygame.MOUSEMOTION] = self.mouseProcessor.playerMouseInput
+        press_dict[pygame.K_UP] = print
+        event_dict[pygame.MOUSEMOTION] = self.mouse_processor.player_mouse_input
 
-    def processInput(self):
+    def process_input(self):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
-                self.quitGame = True
+                self.quit_game = True
             elif event.type != pygame.NOEVENT:
-                self.eventProcessor.handleEvent(event)
+                self.event_processor.handle_event(event)
 
         pygame.event.clear()
 
-    def updateState(self):
+    def update_state(self):
         self.clock.tick(library.constants.TICK_RATE_LIMIT)
         if self.status == library.constants.GameStatus.RUNNING:
-            self.gameState.tickState(self.clock.get_time())
+            self.game_state.tick_state(self.clock.get_time())
         
 
     def render(self):
         if self.status == library.constants.GameStatus.RUNNING:
             # Draw field
-            self.fieldRenderer.drawBackground()
-            self.fieldRenderer.drawScore(
-                self.gameState.playerScore,
-                self.gameState.enemyScore
+            self.field_renderer.draw_background()
+            self.field_renderer.draw_score(
+                self.game_state.player_score,
+                self.game_state.enemy_score
             )
 
             # Draw players
-            self.gameState.playerBrick.draw(self.fieldRenderer)
-            self.gameState.enemyBrick.draw(self.fieldRenderer)
+            self.game_state.player_brick.draw(self.field_renderer)
+            self.game_state.enemy_brick.draw(self.field_renderer)
 
             # Draw the ball
-            self.gameState.ball.draw(self.fieldRenderer)
+            self.game_state.ball.draw(self.field_renderer)
         pygame.display.update()
 
     def run(self):
-        while not self.quitGame:
-            self.processInput()
-            self.updateState()
+        while not self.quit_game:
+            self.process_input()
+            self.update_state()
             self.render()
         pygame.quit()
 

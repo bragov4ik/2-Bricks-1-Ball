@@ -6,25 +6,25 @@ import library.constants
 
 
 def distance(
-    point1: Tuple[float, float],
-    point2: Tuple[float, float]
+    point_1: Tuple[float, float],
+    point_2: Tuple[float, float]
 ) -> float:
     return sqrt(
-        (point1[0] - point2[0])**2
-        + (point1[1] - point2[1])**2)
+        (point_1[0] - point_2[0])**2
+        + (point_1[1] - point_2[1])**2)
 
 
-def lineEqtnFrom2Points(
-    lineStart: Tuple[float, float],
-    lineEnd: Tuple[float, float]
+def line_eqtn_from_2_points(
+    line_start: Tuple[float, float],
+    line_end: Tuple[float, float]
 ) -> Tuple[float, float, float]:
     """
     Finds equation of the line (in form Ax + By = C) from 2 given
     points.  If the points coincide, returns an equation of a line
     parallel to y axis.  Result is a tuple (A, B, C)
     """
-    (x1, y1) = lineStart
-    (x2, y2) = lineEnd
+    (x1, y1) = line_start
+    (x2, y2) = line_end
     a, b = 0, 0
     if x1 != x2:
         b = 1
@@ -40,29 +40,29 @@ def lineEqtnFrom2Points(
     return (a, b, c)
 
 
-def pointInBox(
+def point_in_box(
     point: Tuple[float, float],
-    boxCorner1: Tuple[float, float],
-    boxCorner2: Tuple[float, float]
+    box_corner_1: Tuple[float, float],
+    box_corner_2: Tuple[float, float]
 ) -> bool:
     # As was found in debugging, sometimes computing error cause
     # the algorithm believe that the collision point is located outside
     # the segments (usually at scale of 1e-15).  It seems to happen only
     # on horizontal lines.  Thus, let's add some margin of error.
-    minCorner = (
-        min(boxCorner1[0], boxCorner2[0]) - library.constants.ERROR_MARGIN,
-        min(boxCorner1[1], boxCorner2[1])
+    min_corner = (
+        min(box_corner_1[0], box_corner_2[0]) - library.constants.ERROR_MARGIN,
+        min(box_corner_1[1], box_corner_2[1])
     )
-    maxCorner = (
-        max(boxCorner1[0], boxCorner2[0]) + library.constants.ERROR_MARGIN,
-        max(boxCorner1[1], boxCorner2[1])
+    max_corner = (
+        max(box_corner_1[0], box_corner_2[0]) + library.constants.ERROR_MARGIN,
+        max(box_corner_1[1], box_corner_2[1])
     )
 
-    return (minCorner[0] <= point[0] <= maxCorner[0]
-            and minCorner[1] <= point[1] <= maxCorner[1])
+    return (min_corner[0] <= point[0] <= max_corner[0]
+            and min_corner[1] <= point[1] <= max_corner[1])
 
 
-def rotationMatrix2D(
+def rotation_matrix_2d(
     alpha: float
 ) -> np.ndarray:
     """
@@ -77,12 +77,12 @@ def rotationMatrix2D(
     ])
 
 
-def mirrorVector2D(
-    inputVector: Tuple[float, float],
-    mirrorNormal: Tuple[float, float]
+def mirror_vector_2d(
+    input_vector: Tuple[float, float],
+    mirror_normal: Tuple[float, float]
 ) -> Tuple[float, float]:
-    vec: np.ndarray = np.array(inputVector)
-    normal: np.ndarray = np.array(mirrorNormal)
+    vec: np.ndarray = np.array(input_vector)
+    normal: np.ndarray = np.array(mirror_normal)
     # Normalize the normal (lol)
     normal /= np.linalg.norm(normal)
     # Substract 2 projections of movement onto normal to get the
@@ -91,20 +91,20 @@ def mirrorVector2D(
     return (vec[0], vec[1])
 
 
-def changeOrigin(
+def change_origin(
     point: Tuple[float, float],
-    oldOrigin: Tuple[float, float],
-    newOrigin: Tuple[float, float]
+    old_origin: Tuple[float, float],
+    new_origin: Tuple[float, float]
 ) -> Tuple[float, float]:
     """
     Shifts origin of `point`'s coordinates from `oldOrigin` to
     `newOrigin`
     """
-    newPoint = []
-    for oldCoord, oldOffset, newOffset in zip(point, oldOrigin, newOrigin):
-        newPoint.append(oldCoord + oldOffset - newOffset)
+    new_point = []
+    for old_coord, old_offset, new_offset in zip(point, old_origin, new_origin):
+        new_point.append(old_coord + old_offset - new_offset)
     # If the specified origin had less dimensions, leave remaining
     # ones unchanged
-    if len(newPoint) < len(point):
-        newPoint.extend(point[len(newPoint):])
-    return newPoint
+    if len(new_point) < len(point):
+        new_point.extend(point[len(new_point):])
+    return new_point

@@ -1,4 +1,4 @@
 import server.gameServer
 
-serverInstance = server.gameServer.GameServer()
-serverInstance.run()
+server_instance = server.gameServer.GameServer()
+server_instance.run()

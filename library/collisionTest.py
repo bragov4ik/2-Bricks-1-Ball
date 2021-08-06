@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 import pygame
 import library.utilities
+import library.collisions
 
 
 class MovableObject(ABC):
@@ -10,11 +11,11 @@ class MovableObject(ABC):
         self.location = [0, 0]
 
     @abstractmethod
-    def moveBy(self, move):
+    def move_by(self, move):
         pass
 
     @abstractmethod
-    def moveTo(self, newLocation):
+    def move_to(self, new_location):
         pass
 
     def __iter__(self):
@@ -30,9 +31,9 @@ class Point(MovableObject):
         self.location[0] += move[0]
         self.location[1] += move[1]
 
-    def moveTo(self, newLocation: List[float]):
-        self.location[0] = newLocation[0]
-        self.location[1] = newLocation[1]
+    def moveTo(self, new_location: List[float]):
+        self.location[0] = new_location[0]
+        self.location[1] = new_location[1]
 
 
 class Figure(ABC):
@@ -88,13 +89,13 @@ class Segment(Figure):
 class InputHandler:
     def __init__(
         self,
-        controllableObject: MovableObject,
-        controlKeys: Tuple[int, int, int, int]
+        controllable_object: MovableObject,
+        control_keys: Tuple[int, int, int, int]
     ):
-        self.controllableObject = controllableObject
-        self.controlKeys = controlKeys
+        self.controllable_object = controllable_object
+        self.control_keys = control_keys
         # All keys are released by default
-        self.pressedKeys = [
+        self.pressed_keys = [
             False,
             False,
             False,
@@ -103,76 +104,76 @@ class InputHandler:
 
     # List of 4 boolean variables indicating if corresponding control
     # key is considered pressed
-    pressedKeys = list()
+    pressed_keys = list()
     # Control keys is a 4 element tuple of keys assigned for
     # y pos, x pos, y neg, and x neg moves respectively (1 step in
     # positive/negative direction of the axis)
-    controlKeys = (0, 0, 0, 0)
+    control_keys = (0, 0, 0, 0)
     # Timer used for precise controls (has delay before rapid update)
     # 0 if nothing was pressed on previous update
-    pressStartTime = 0
+    press_start_time = 0
 
-    def handleKeyDown(
+    def handle_key_down(
         self,
-        pressedKey: int
+        pressed_key: int
     ):
         try:
-            keyIndex = self.controlKeys.index(pressedKey)
-            self.pressedKeys[keyIndex] = True
+            key_index = self.control_keys.index(pressed_key)
+            self.pressed_keys[key_index] = True
         except ValueError:
             # Key does not belong to the list of specified control keys.
             pass
 
-    def handleKeyUp(
+    def handle_key_up(
         self,
-        releasedKey: int
+        released_key: int
     ):
         try:
-            keyIndex = self.controlKeys.index(releasedKey)
-            self.pressedKeys[keyIndex] = False
+            key_index = self.control_keys.index(released_key)
+            self.pressed_keys[key_index] = False
 
             # Reset move timer if all are released now
-            allReleased = True
-            for key in self.pressedKeys:
+            all_released = True
+            for key in self.pressed_keys:
                 if key:
-                    allReleased = False
-            if allReleased:
-                self.pressStartTime = 0
+                    all_released = False
+            if all_released:
+                self.press_start_time = 0
         except ValueError as verr:
             # Key does not belong to the list of specified control keys.
             pass
 
-    def moveObject(self):
+    def move_object(self):
         """
         Moves the controlled object according to captured input.  Has
         500 ms delay between pressing and rapid movement of the object.
         Returns whether anything was updated.
         """
-        wasUpdated = False
-        if (pygame.time.get_ticks() - self.pressStartTime < 500
-                and self.pressStartTime != 0):
+        was_updated = False
+        if (pygame.time.get_ticks() - self.press_start_time < 500
+                and self.press_start_time != 0):
             # Don't move if cooldown is not over yet
             return False
 
         move = [0, 0]
-        if self.pressedKeys[0]:
+        if self.pressed_keys[0]:
             move[1] += 1
-            wasUpdated = True
-        if self.pressedKeys[1]:
+            was_updated = True
+        if self.pressed_keys[1]:
             move[0] += 1
-            wasUpdated = True
-        if self.pressedKeys[2]:
+            was_updated = True
+        if self.pressed_keys[2]:
             move[1] -= 1
-            wasUpdated = True
-        if self.pressedKeys[3]:
+            was_updated = True
+        if self.pressed_keys[3]:
             move[0] -= 1
-            wasUpdated = True
+            was_updated = True
         # Start timer if needed
-        if wasUpdated and self.pressStartTime == 0:
-            self.pressStartTime = pygame.time.get_ticks()
-        if wasUpdated:
-            self.controllableObject.moveBy(move)
-        return wasUpdated
+        if was_updated and self.press_start_time == 0:
+            self.press_start_time = pygame.time.get_ticks()
+        if was_updated:
+            self.controllable_object.move_by(move)
+        return was_updated
 
 
 class Game:
@@ -182,7 +183,7 @@ class Game:
     COLOR_COLLISION = (240, 240, 230)
 
     # Variables
-    quitGame: bool
+    quit_game: bool
     updaters: List[InputHandler]
     figures: List[Figure]
     collisions: List[Figure]
@@ -194,41 +195,41 @@ class Game:
         self.updaters = []
         self.figures = []
         self.collisions = []
-        self.quitGame = False
+        self.quit_game = False
 
-    def processInput(self):
+    def process_input(self):
         event = pygame.event.poll()
         if event.type == pygame.QUIT:
-            self.quitGame = True
+            self.quit_game = True
         elif event.type == pygame.KEYDOWN:
             key = event.__dict__["key"]
             for updater in self.updaters:
-                updater.handleKeyDown(key)
+                updater.handle_key_down(key)
         elif event.type == pygame.KEYUP:
             key = event.__dict__["key"]
             for updater in self.updaters:
-                updater.handleKeyUp(key)
+                updater.handle_key_up(key)
 
-    def tickUpdaters(self):
+    def tick_updaters(self):
         """
         Moves all objects attached to updaters accordingly.  Return
         whether anything was actually changed
         """
-        anyUpdated = False
+        any_updated = False
         for updater in self.updaters:
-            wasMoved = updater.moveObject()
-            if wasMoved:
-                anyUpdated = True
-        return anyUpdated
+            was_moved = updater.move_object()
+            if was_moved:
+                any_updated = True
+        return any_updated
 
-    def reinitCollisions(self):
+    def reinit_collisions(self):
         pass
 
-    def updateState(self):
+    def update_state(self):
         self.clock.tick(60)
-        anyUpdated = self.tickUpdaters()
-        if anyUpdated:
-            self.reinitCollisions()
+        any_updated = self.tick_updaters()
+        if any_updated:
+            self.reinit_collisions()
 
     def render(self):
         # Draw background
@@ -247,9 +248,9 @@ class Game:
         pygame.display.update()
 
     def run(self):
-        while not self.quitGame:
-            self.processInput()
-            self.updateState()
+        while not self.quit_game:
+            self.process_input()
+            self.update_state()
             self.render()
         pygame.quit()
 
@@ -264,7 +265,7 @@ class DemoSegCirc(Game):
             Point(400, 200)
         )
 
-        self.segmentUpdater1 = InputHandler(
+        self.segment_updater1 = InputHandler(
             self.segment.start,
             (
                 pygame.K_DOWN,
@@ -273,7 +274,7 @@ class DemoSegCirc(Game):
                 pygame.K_LEFT
             )
         )
-        self.segmentUpdater2 = InputHandler(
+        self.segment_updater2 = InputHandler(
             self.segment.end,
             (
                 pygame.K_s,
@@ -283,18 +284,18 @@ class DemoSegCirc(Game):
             )
         )
         self.updaters: List[InputHandler] = [
-            self.segmentUpdater1,
-            self.segmentUpdater2,
+            self.segment_updater1,
+            self.segment_updater2,
         ]
         self.figures: List[Figure] = [
             self.circle,
             self.segment,
         ]
         # Need to initialize collisions as we've just added figures
-        self.reinitCollisions()
+        self.reinit_collisions()
 
-    def reinitCollisions(self):
-        collisions = library.utilities.collisionVectorCircle(
+    def reinit_collisions(self):
+        collisions = library.collisions.collision_vector_circle(
             self.segment.start.location,
             self.segment.end.location,
             self.circle.center.location,
@@ -303,7 +304,7 @@ class DemoSegCirc(Game):
         self.collisions = []
         for col in collisions:
             # Don't draw if outside the segment
-            if not library.utilities.pointInBox(
+            if not library.utilities.point_in_box(
                 col,
                 self.segment.start.location,
                 self.segment.end.location
@@ -319,8 +320,8 @@ class DemoSegCirc(Game):
 
     circle: Circle
     segment: Segment
-    segmentUpdater1: InputHandler
-    segmentUpdater2: InputHandler
+    segment_updater1: InputHandler
+    segment_updater2: InputHandler
 
 
 class Demo2Seg(Game):
@@ -329,7 +330,7 @@ class Demo2Seg(Game):
         self.segment1 = Segment(Point(0, 0), Point(100, 100))
         self.segment2 = Segment(Point(100, 0), Point(0, 100))
 
-        self.segmentUpdater1 = InputHandler(
+        self.segment_updater1 = InputHandler(
             self.segment1.start,
             (
                 pygame.K_s,
@@ -338,7 +339,7 @@ class Demo2Seg(Game):
                 pygame.K_a
             )
         )
-        self.segmentUpdater2 = InputHandler(
+        self.segment_updater2 = InputHandler(
             self.segment1.end,
             (
                 pygame.K_k,
@@ -348,7 +349,7 @@ class Demo2Seg(Game):
             )
         )
 
-        self.segmentUpdater3 = InputHandler(
+        self.segment_updater3 = InputHandler(
             self.segment2.start,
             (
                 pygame.K_DOWN,
@@ -357,7 +358,7 @@ class Demo2Seg(Game):
                 pygame.K_LEFT
             )
         )
-        self.segmentUpdater4 = InputHandler(
+        self.segment_updater4 = InputHandler(
             self.segment2.end,
             (
                 pygame.K_KP2,
@@ -368,19 +369,19 @@ class Demo2Seg(Game):
         )
 
         self.updaters: List[InputHandler] = [
-            self.segmentUpdater1,
-            self.segmentUpdater2,
-            self.segmentUpdater3,
-            self.segmentUpdater4,
+            self.segment_updater1,
+            self.segment_updater2,
+            self.segment_updater3,
+            self.segment_updater4,
         ]
         self.figures: List[Figure] = [
             self.segment1,
             self.segment2,
         ]
-        self.reinitCollisions()
+        self.reinit_collisions()
 
-    def reinitCollisions(self):
-        collisions = library.utilities.collisionVectorSegment(
+    def reinit_collisions(self):
+        collisions = library.collisions.collision_vector_segment(
             vecStart=self.segment1.start.location,
             vecEnd=self.segment1.end.location,
             segStart=self.segment2.start.location,
@@ -398,10 +399,10 @@ class Demo2Seg(Game):
 
     segment1: Segment
     segment2: Segment
-    segmentUpdater1: InputHandler
-    segmentUpdater2: InputHandler
-    segmentUpdater3: InputHandler
-    segmentUpdater4: InputHandler
+    segment_updater1: InputHandler
+    segment_updater2: InputHandler
+    segment_updater3: InputHandler
+    segment_updater4: InputHandler
 
 
 game = DemoSegCirc()

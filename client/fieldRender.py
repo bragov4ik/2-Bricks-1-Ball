@@ -9,49 +9,49 @@ import library.constants
 
 class PlayingFieldRenderer:
     window: pygame.Surface
-    scoreFont: pygame.freetype.Font
+    score_font: pygame.freetype.Font
     # Origin of field's borders to render them
-    fieldRenderOrigin: Tuple[int, int]
+    field_render_origin: Tuple[int, int]
     # Location of the actual playing field (to render playing objects
     # with offset)
-    fieldOrigin: Tuple[int, int]
-    borderColor: Tuple[int, int, int]
-    backgroundColor: Tuple[int, int, int]
+    field_origin: Tuple[int, int]
+    border_color: Tuple[int, int, int]
+    background_color: Tuple[int, int, int]
 
     def __init__(
         self,
         window,
-        borderColor=(127, 234, 127),
-        backgroundColor=(0, 0, 0),
+        border_color=(127, 234, 127),
+        background_color=(0, 0, 0),
         fontFile: Union[str, None] = None,
         fontSize: float = library.constants.SCORE_FONT_SIZE
     ) -> None:
         self.window = window
-        self.scoreFont = pygame.freetype.Font(fontFile, size=fontSize)
+        self.score_font = pygame.freetype.Font(fontFile, size=fontSize)
         resolution = window.get_size()
-        self.fieldOrigin = (
+        self.field_origin = (
             (resolution[0] - library.constants.GAME_FIELD_SIZE[0]) / 2,
             (resolution[1] - library.constants.GAME_FIELD_SIZE[1]) / 2
         )
-        self.fieldRenderOrigin = (
+        self.field_render_origin = (
             (resolution[0] - library.constants.GAME_FIELD_RENDER_SIZE[0]) / 2,
             (resolution[1] - library.constants.GAME_FIELD_RENDER_SIZE[1]) / 2
         )
-        self.borderColor = borderColor
-        self.backgroundColor = backgroundColor
+        self.border_color = border_color
+        self.background_color = background_color
 
-    def updateOrigins(self):
+    def update_origins(self):
         resolution = self.window.get_size()
-        self.fieldOrigin = (
+        self.field_origin = (
             (resolution[0] - library.constants.GAME_FIELD_SIZE[0]) / 2,
             (resolution[1] - library.constants.GAME_FIELD_SIZE[1]) / 2
         )
-        self.fieldRenderOrigin = (
+        self.field_render_origin = (
             (resolution[0] - library.constants.GAME_FIELD_RENDER_SIZE[0]) / 2,
             (resolution[1] - library.constants.GAME_FIELD_RENDER_SIZE[1]) / 2
         )
 
-    def drawCircle(
+    def draw_circle(
         self,
         color,
         center,
@@ -62,30 +62,30 @@ class PlayingFieldRenderer:
         for shifted positions according to playing field's coordinates.  
         Return value: see `pygame.draw.circle` docs
         """
-        shiftedCenter = library.utilities.changeOrigin(
-            center, self.fieldOrigin, (0, 0))
-        shiftedCenter = tuple(map(int, shiftedCenter))
+        shifted_center = library.utilities.change_origin(
+            center, self.field_origin, (0, 0))
+        shifted_center = tuple(map(int, shifted_center))
         radius = int(radius)
         gfxdraw.aacircle(
             self.window,
-            shiftedCenter[0],
-            shiftedCenter[1],
+            shifted_center[0],
+            shifted_center[1],
             radius,
             color
         )
         gfxdraw.filled_circle(
             self.window,
-            shiftedCenter[0],
-            shiftedCenter[1],
+            shifted_center[0],
+            shifted_center[1],
             radius,
             color
         )
 
-    def drawLine(
+    def draw_line(
         self,
         color,
-        startPos,
-        endPos,
+        start_pos,
+        end_pos,
         width=1
     ) -> pygame.Rect:
         """
@@ -93,137 +93,137 @@ class PlayingFieldRenderer:
         for shifted center according to playing field's coordinates.  
         Return value: see `pygame.draw.circle` docs
         """
-        shiftedStart = library.utilities.changeOrigin(
-            startPos, self.fieldOrigin, (0, 0))
-        shiftedEnd = library.utilities.changeOrigin(endPos, self.fieldOrigin, (0, 0))
+        shifted_start = library.utilities.change_origin(
+            start_pos, self.field_origin, (0, 0))
+        shifted_end = library.utilities.change_origin(end_pos, self.field_origin, (0, 0))
         pygame.draw.line(
             self.window,
             color,
-            shiftedStart,
-            shiftedEnd,
+            shifted_start,
+            shifted_end,
             width
         )
 
-    def drawRect(
+    def draw_rect(
         self,
         color,
         rect: Tuple[int, int, int, int],
         width=0,
-        borderRadius=0,
-        borderTopLeftRadius=-1,
-        borderTopRightRadius=-1,
-        borderBottomLeftRadius=-1,
-        borderBottomRightRadius=-1
+        border_radius=0,
+        border_top_left_radius=-1,
+        border_top_right_radius=-1,
+        border_bottom_left_radius=-1,
+        border_bottom_right_radius=-1
     ) -> pygame.Rect:
 
         position = rect[:2]
         scale = rect[2:]
-        shiftedPos = library.utilities.changeOrigin(position, self.fieldOrigin, (0, 0))
-        newRect = tuple(shiftedPos) + scale
+        shifted_pos = library.utilities.change_origin(position, self.field_origin, (0, 0))
+        new_rect = tuple(shifted_pos) + scale
         pygame.draw.rect(
             self.window,
             color,
-            newRect,
+            new_rect,
             width,
-            borderRadius,
-            borderTopLeftRadius,
-            borderTopRightRadius,
-            borderBottomLeftRadius,
-            borderBottomRightRadius
+            border_radius,
+            border_top_left_radius,
+            border_top_right_radius,
+            border_bottom_left_radius,
+            border_bottom_right_radius
         )
 
-    def drawBackground(self):
-        windowSize = self.window.get_size()
+    def draw_background(self):
+        window_size = self.window.get_size()
         pygame.draw.rect(
             self.window,
-            self.backgroundColor,
+            self.background_color,
             (
                 0,
                 0,
-                windowSize[0],
-                windowSize[1]
+                window_size[0],
+                window_size[1]
             )
         )
         pygame.draw.rect(
             self.window,
-            self.borderColor,
+            self.border_color,
             (
-                self.fieldRenderOrigin[0],
-                self.fieldRenderOrigin[1],
+                self.field_render_origin[0],
+                self.field_render_origin[1],
                 library.constants.GAME_FIELD_RENDER_SIZE[0],
                 library.constants.GAME_FIELD_RENDER_SIZE[1]
             )
         )
         pygame.draw.rect(
             self.window,
-            self.backgroundColor,
+            self.background_color,
             (
-                self.fieldOrigin[0],
-                self.fieldOrigin[1],
+                self.field_origin[0],
+                self.field_origin[1],
                 library.constants.GAME_FIELD_SIZE[0],
                 library.constants.GAME_FIELD_SIZE[1]
             )
         )
 
 
-    def drawScore(self, playerScore, enemyScore):
-        fontHeight = self.scoreFont.size
-        if type(fontHeight) is Tuple[float, float]:
+    def draw_score(self, player_score, enemy_score):
+        font_height = self.score_font.size
+        if type(font_height) is Tuple[float, float]:
             # Maybe wrong?
-            fontHeight = fontHeight[1]
+            font_height = font_height[1]
 
-        scoreTopCenter = (
-            (self.fieldRenderOrigin[0]
+        score_top_center = (
+            (self.field_render_origin[0]
             + library.constants.GAME_FIELD_RENDER_SIZE[0]/2),
-            (self.fieldRenderOrigin[1]
-            - fontHeight
+            (self.field_render_origin[1]
+            - font_height
             - library.constants.SCORE_OFFSET)
         )
-        delimPos = (
-            scoreTopCenter[0],
-            scoreTopCenter[1] + 3
+        delim_pos = (
+            score_top_center[0],
+            score_top_center[1] + 3
         )
-        PlayingFieldRenderer.drawCentredText(
-            self.scoreFont,
+        PlayingFieldRenderer.draw_centred_text(
+            self.score_font,
             self.window,
-            delimPos,
+            delim_pos,
             library.constants.SCORE_DELIMITER,
             fgcolor=library.constants.SCORE_FONT_COLOR
         )
-        delimRect = self.scoreFont.get_rect(library.constants.SCORE_DELIMITER)
-        delimWidth = delimRect.size[0]
+        delim_rect = self.score_font.get_rect(library.constants.SCORE_DELIMITER)
+        delim_width = delim_rect.size[0]
         
-        playerScoreStr = str(playerScore)
-        playerScoreWidth = self.scoreFont.get_rect(
-            playerScoreStr
+        player_score_str = str(player_score)
+        player_score_width = self.score_font.get_rect(
+            player_score_str
         ).size[0]
-        playerScorePos = (
-            int(scoreTopCenter[0] - delimWidth/2.0 - playerScoreWidth - 2),
-            int(scoreTopCenter[1])
+        player_score_pos = (
+            int(score_top_center[0] - delim_width/2.0 - player_score_width - 2),
+            int(score_top_center[1])
         )
-        self.scoreFont.render_to(
+        self.score_font.render_to(
             self.window,
-            playerScorePos,
-            playerScoreStr, 
+            player_score_pos,
+            player_score_str, 
             fgcolor=library.constants.SCORE_FONT_COLOR,
-            bgcolor=self.backgroundColor
+            bgcolor=self.background_color
         )
 
-        enemyScoreStr = str(enemyScore)
-        enemyScorePos = (
-            scoreTopCenter[0] + delimWidth/2.0 + 2,
-            scoreTopCenter[1]
+        enemy_score_str = str(enemy_score)
+        enemy_score_pos = (
+            score_top_center[0] + delim_width/2.0 + 2,
+            score_top_center[1]
         )
-        self.scoreFont.render_to(
+        self.score_font.render_to(
             self.window,
-            enemyScorePos,
-            enemyScoreStr,
+            enemy_score_pos,
+            enemy_score_str,
             fgcolor=library.constants.SCORE_FONT_COLOR,
-            bgcolor=self.backgroundColor
+            bgcolor=self.background_color
         )
 
 
-    def drawCentredText(
+    def draw_centred_text(
         font: pygame.freetype.Font,
         surface: pygame.Surface,
         dest: Tuple[float, float],
@@ -235,13 +235,13 @@ class PlayingFieldRenderer:
         size: float = 0
     ):
         width = font.get_rect(text).size[0]
-        newPos = (
+        new_pos = (
             dest[0] - width/2,
             dest[1]
         )
         font.render_to(
             surface,
-            newPos,
+            new_pos,
             text,
             fgcolor,
             bgcolor,

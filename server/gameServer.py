@@ -1,27 +1,26 @@
 import pygame
 import pygame.freetype
 
-import server.communicatinon
+import server.communication
 import server.gameState
 import library.constants
 
 class GameServer:
-    quitGame: bool
+    quit_game: bool
     status: library.constants.GameStatus
-    gameState: server.gameState.GameState
+    game_state: server.gameState.GameState
     clock: pygame.time.Clock
-    connection: server.communicatinon.Communication
+    connection: server.communication.Communication
 
     def __init__(self):
         pygame.init()
         self.clock = pygame.time.Clock()
-        self.quitGame = False
-        self.gameState = server.gameState.GameState()
+        self.quit_game = False
+        self.game_state = server.gameState.GameState()
         self.status = library.constants.GameStatus.PAUSE
 
         # Wait for 2 clients
-        self.connection = server.communicatinon.Communication()
-        self.connection.connectClients()
+        self.connection = server.communication.Communication()
         
         self.status = library.constants.GameStatus.RUNNING
         
@@ -33,7 +32,7 @@ class GameServer:
     def update_state(self):
         self.clock.tick(library.constants.TICK_RATE_LIMIT)
         if self.status == library.constants.GameStatus.RUNNING:
-            self.gameState.tickState(self.clock.get_time())
+            self.game_state.tick_state(self.clock.get_time())
         
 
     def render(self):
@@ -42,7 +41,7 @@ class GameServer:
 
 
     def run(self):
-        while not self.quitGame:
+        while not self.quit_game:
             self.process_input()
             self.update_state()
             self.render()

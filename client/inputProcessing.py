@@ -6,28 +6,28 @@ import library.constants
 
 class MouseInput:
     renderer: client.fieldRender.PlayingFieldRenderer
-    playerObject: library.customObjects.Player
+    player_object: library.customObjects.Player
 
     def __init__(
         self,
         renderer: client.fieldRender.PlayingFieldRenderer,
-        playerObject: library.customObjects.Player
+        player_object: library.customObjects.Player
     ):
         self.renderer = renderer
-        self.playerObject = playerObject
+        self.player_object = player_object
 
-    def playerMouseInput(self, event):
+    def player_mouse_input(self, event):
         pos = event.__dict__["pos"]
         # Convert from the window coordinates to shifted field
         # coordinates (to align center of the player rather than upper
         # side with the cursor)
-        newOrigin = self.renderer.fieldOrigin
-        newOrigin = (newOrigin[0], newOrigin[1] + library.constants.PLAYER_SIZE[1]/2)
-        pos = library.utilities.changeOrigin(pos, (0, 0), newOrigin)
-        yDesired = pos[1]
+        new_origin = self.renderer.field_origin
+        new_origin = (new_origin[0], new_origin[1] + library.constants.PLAYER_SIZE[1]/2)
+        pos = library.utilities.change_origin(pos, (0, 0), new_origin)
+        y_desired = pos[1]
 
         # Clamp the position
-        yLimit = library.constants.GAME_FIELD_SIZE[1] - library.constants.PLAYER_SIZE[1]
-        yDesired = max(0, min(yDesired, yLimit))
+        y_limit = library.constants.GAME_FIELD_SIZE[1] - library.constants.PLAYER_SIZE[1]
+        y_desired = max(0, min(y_desired, y_limit))
 
-        self.playerObject.setDesiredMove(0, yDesired - self.playerObject.yPos)
+        self.player_object.set_desired_move(0, y_desired - self.player_object.y_pos)
